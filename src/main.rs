@@ -2,6 +2,7 @@ extern crate cpal;
 extern crate failure;
 
 use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
+use std::f32::consts::PI;
 
 fn main() -> Result<(), failure::Error> {
     let host = cpal::default_host();
@@ -17,8 +18,7 @@ fn main() -> Result<(), failure::Error> {
     // Produce a sinusoid of maximum amplitude.
     let mut next_value = || {
         sample_clock = (sample_clock + 1.0) % sample_rate;
-        let modulate = (sample_clock * 4.0 * 3.14).cos() * 240.0;
-        (sample_clock * modulate * 2.0 * 3.141592 / sample_rate).sin()
+        (sample_clock * 440.0 * 2.0 * PI / sample_rate).sin()
     };
 
     event_loop.run(move |id, result| {
@@ -57,5 +57,5 @@ fn main() -> Result<(), failure::Error> {
             },
             _ => (),
         }
-    });
+    })
 }
