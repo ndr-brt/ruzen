@@ -8,7 +8,6 @@ use std::sync::mpsc::{Receiver, sync_channel};
 use cpal::StreamData::Output;
 use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
 use std::f64::consts::PI;
-use std::thread::sleep;
 
 const LATENCY: u8 = 250;
 
@@ -17,15 +16,13 @@ pub type Hz = f64;
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
     let (_sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
-    let mut clock = Clock::new(out.sample_rate());
+    let mut sine = Sine::new(out.sample_rate(), 440.0);
 
     thread::spawn(move || out.loop_forever(sig_in));
 
     thread::spawn(move || {
         loop {
-            clock.tick();
-            let signal = (clock.get() * 440.0 * 2.0 * PI).sin();
-            let result = _sig_out.send(signal);
+            let result = _sig_out.send(sine.signal());
             match result {
                 Ok(_data) => (),
                 Err(err) => println!("{}", err)
@@ -34,6 +31,25 @@ fn main() {
     });
 
     loop { }
+}
+
+pub struct Sine {
+    frequency: f64,
+    clock: Clock,
+}
+
+impl Sine {
+    pub fn new(sample_rate: Hz, frequency: Hz) -> Sine {
+        Sine {
+            frequency,
+            clock: Clock::new(sample_rate),
+        }
+    }
+
+    pub fn signal(&mut self) -> f64 {
+        self.clock.tick();
+        (self.clock.get() * self.frequency * 2.0 * PI).sin()
+    }
 }
 
 pub struct Out {
