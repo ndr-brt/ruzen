@@ -8,6 +8,7 @@ use std::sync::mpsc::{Receiver, sync_channel};
 use cpal::StreamData::Output;
 use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
 use std::f64::consts::PI;
+use std::thread::sleep;
 
 const LATENCY: u8 = 250;
 
@@ -24,7 +25,7 @@ fn main() {
         loop {
             clock.tick();
             let signal = (clock.get() * 440.0 * 2.0 * PI).sin();
-            let result = _sig_out.send(signal * 200000.0);
+            let result = _sig_out.send(signal);
             match result {
                 Ok(_data) => (),
                 Err(err) => println!("{}", err)
