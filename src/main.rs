@@ -8,10 +8,14 @@ use std::sync::mpsc::{Receiver, sync_channel};
 use cpal::StreamData::Output;
 use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
 use std::f64::consts::PI;
+use crate::clock::Hz;
+use crate::clock::Clock;
+use crate::envelope::Envelope;
 
 const LATENCY: u8 = 250;
 
-pub type Hz = f64;
+mod clock;
+mod envelope;
 
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
@@ -45,14 +49,14 @@ impl Sine {
         Sine {
             frequency,
             clock: Clock::new(sample_rate),
-            envelope: Envelope { attack: 0.0, release: 0.0 }
+            envelope: Envelope::new(0.0, 0.0)
         }
     }
 
     pub fn signal(&mut self) -> f64 {
         self.clock.tick();
         let signal = (self.clock.get() * self.frequency * 2.0 * PI).sin();
-        if self.envelope.attack != 0. {
+        if self.envelope.is_valid() {
             println!("ENVELOPA!");
             self.envelope.apply(self.clock.get(), signal)
         } else {
@@ -63,31 +67,6 @@ impl Sine {
     pub fn envelope(&mut self, envelope: Envelope) -> Self {
         self.envelope = envelope;
         self.clone()
-    }
-}
-
-#[derive(Clone,Copy)]
-pub struct Envelope {
-    attack: f64,
-    release: f64
-}
-
-impl Envelope {
-    pub fn new(attack: f64, release: f64) -> Envelope {
-        Envelope {
-            attack,
-            release
-        }
-    }
-
-    pub fn apply(&self, elapsed: f64, sound: f64) -> f64 {
-        let mut value: f64 = 0.0;
-        if elapsed <= self.attack {
-            value = elapsed / self.attack;
-        } else if elapsed <= self.attack + self.release {
-            value = 1. - (elapsed / (self.attack + self.release))
-        }
-        sound * value
     }
 }
 
@@ -177,27 +156,4 @@ impl SampleFromF64 for u16 {
     fn from_f64(value: f64) -> u16 {
         ((value * 0.5 + 0.5) * f64::from(std::u16::MAX)) as u16
     }
-}
-
-#[derive(Clone,Copy)]
-struct Clock {
-    sample_rate: Hz,
-    clock: f64,
-}
-
-impl Clock {
-
-    fn new(sample_rate: Hz) -> Clock {
-        Clock{ sample_rate, clock: 0. }
-    }
-
-    fn tick(&mut self) -> f64 {
-        self.clock += 1.0;
-        self.get()
-    }
-
-    fn get(&self) -> f64 {
-        self.clock / self.sample_rate
-    }
-
 }
