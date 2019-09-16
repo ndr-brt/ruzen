@@ -16,7 +16,7 @@ pub type Hz = f64;
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
     let (_sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
-    let mut sine = Sine::new(out.sample_rate(), 440.0);
+    let mut sine = Sine::new(out.sample_rate(), 440.0).envelope(Envelope::new(1., 1.));
 
     thread::spawn(move || out.loop_forever(sig_in));
 
@@ -33,9 +33,11 @@ fn main() {
     loop { }
 }
 
-pub struct Sine {
+#[derive(Clone,Copy)]
+pub struct Sine{
     frequency: f64,
     clock: Clock,
+    envelope: Envelope,
 }
 
 impl Sine {
@@ -43,12 +45,49 @@ impl Sine {
         Sine {
             frequency,
             clock: Clock::new(sample_rate),
+            envelope: Envelope { attack: 0.0, release: 0.0 }
         }
     }
 
     pub fn signal(&mut self) -> f64 {
         self.clock.tick();
-        (self.clock.get() * self.frequency * 2.0 * PI).sin()
+        let signal = (self.clock.get() * self.frequency * 2.0 * PI).sin();
+        if self.envelope.attack != 0. {
+            println!("ENVELOPA!");
+            self.envelope.apply(self.clock.get(), signal)
+        } else {
+            signal
+        }
+    }
+
+    pub fn envelope(&mut self, envelope: Envelope) -> Self {
+        self.envelope = envelope;
+        self.clone()
+    }
+}
+
+#[derive(Clone,Copy)]
+pub struct Envelope {
+    attack: f64,
+    release: f64
+}
+
+impl Envelope {
+    pub fn new(attack: f64, release: f64) -> Envelope {
+        Envelope {
+            attack,
+            release
+        }
+    }
+
+    pub fn apply(&self, elapsed: f64, sound: f64) -> f64 {
+        let mut value: f64 = 0.0;
+        if elapsed <= self.attack {
+            value = elapsed / self.attack;
+        } else if elapsed <= self.attack + self.release {
+            value = 1. - (elapsed / (self.attack + self.release))
+        }
+        sound * value
     }
 }
 
@@ -140,10 +179,12 @@ impl SampleFromF64 for u16 {
     }
 }
 
+#[derive(Clone,Copy)]
 struct Clock {
     sample_rate: Hz,
     clock: f64,
 }
+
 impl Clock {
 
     fn new(sample_rate: Hz) -> Clock {
