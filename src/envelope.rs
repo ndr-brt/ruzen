@@ -17,7 +17,7 @@ impl Envelope {
         if elapsed <= self.attack {
             value = elapsed / self.attack;
         } else if elapsed <= self.attack + self.release {
-            value = 1. - (elapsed / (self.attack + self.release))
+            value = (self.attack + self.release) - (elapsed / self.release)
         }
         sound * value
     }
@@ -26,3 +26,5 @@ impl Envelope {
         self.attack != 0. && self.release != 0.
     }
 }
+
+// TODO: add tests! pordios!
