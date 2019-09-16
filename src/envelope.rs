@@ -26,9 +26,6 @@ impl Envelope {
         self.attack != 0. && self.release != 0.
     }
 
-    pub fn duration(&self) -> f64 {
-        self.attack + self.release
-    }
 }
 
 // TODO: add tests! pordios!
