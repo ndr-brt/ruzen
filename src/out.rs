@@ -38,7 +38,7 @@ impl Out {
         let event_loop = &self.host.event_loop();
         let stream_id = event_loop.build_output_stream(&self.device, &self.format).unwrap();
         match event_loop.play_stream(stream_id.clone()) {
-            Ok(result) => println!("{:?}", result),
+            Ok(result) => println!("Stream started {:?}", result),
             Err(err) => println!("{}", err)
         };
 
