@@ -1,15 +1,19 @@
 extern crate cpal;
 extern crate failure;
+extern crate rand;
 
-use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
-use cpal::{Format, OutputBuffer, Device, Host, ChannelCount};
-use std::thread;
-use std::sync::mpsc::{Receiver, sync_channel};
-use cpal::StreamData::Output;
-use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
 use std::f64::consts::PI;
-use crate::clock::Hz;
+use std::sync::mpsc::{Receiver, sync_channel, SyncSender};
+use std::thread;
+
+use cpal::{ChannelCount, Device, Format, Host, OutputBuffer};
+use cpal::StreamData::Output;
+use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
+use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
+use rand::Rng;
+
 use crate::clock::Clock;
+use crate::clock::Hz;
 use crate::envelope::Envelope;
 
 const LATENCY: u8 = 250;
@@ -19,22 +23,31 @@ mod envelope;
 
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
-    let (_sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
-    let mut sine = Sine::new(out.sample_rate(), 440.0).envelope(Envelope::new(1., 1.));
+    let (sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
+    let sample_rate = out.sample_rate();
 
     thread::spawn(move || out.loop_forever(sig_in));
+    thread::spawn(move || play(sample_rate, sig_out));
 
-    thread::spawn(move || {
-        loop {
-            let result = _sig_out.send(sine.signal());
+    loop { }
+}
+
+fn play(sample_rate: Hz, sig_out: SyncSender<f64>) -> () {
+    let mut rng = rand::thread_rng();
+    loop {
+        let frequency: f64 = rng.gen_range(220.0, 440.0);
+        println!("Frequency {}", frequency);
+        let mut sine = Sine::new(sample_rate, frequency).envelope(Envelope::new(1., 1.));
+        while !sine.is_finished() {
+
+            let result = sig_out.send(sine.signal());
             match result {
                 Ok(_data) => (),
                 Err(err) => println!("{}", err)
             }
         };
-    });
+    }
 
-    loop { }
 }
 
 #[derive(Clone,Copy)]
@@ -57,7 +70,6 @@ impl Sine {
         self.clock.tick();
         let signal = (self.clock.get() * self.frequency * 2.0 * PI).sin();
         if self.envelope.is_valid() {
-            println!("ENVELOPA!");
             self.envelope.apply(self.clock.get(), signal)
         } else {
             signal
@@ -67,6 +79,10 @@ impl Sine {
     pub fn envelope(&mut self, envelope: Envelope) -> Self {
         self.envelope = envelope;
         self.clone()
+    }
+
+    pub fn is_finished(&self) -> bool {
+        self.envelope.is_valid() && self.envelope.duration() < self.clock.get()
     }
 }
 
