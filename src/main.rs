@@ -31,7 +31,8 @@ fn main() {
     loop {
         sleep(Duration::from_millis(rng.gen_range(500, 1500)));
         let frequency: f64 = rng.gen_range(110.0, 880.0);
-        let command = Command::Play(Wave::Saw, sample_rate, frequency);
+        let phase: f64 = rng.gen_range(0., 3.14);
+        let command = Command::Play(Wave::Saw, sample_rate, frequency, phase);
         match cmd_out.send(command) {
             Ok(_) => println!("Sent new sine with frequency {}", frequency),
             Err(err) => println!("Error sending command {}", err),

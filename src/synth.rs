@@ -32,7 +32,7 @@ impl Synth {
 pub enum Wave { Sine, Saw }
 
 pub trait Oscillator {
-    fn signal(&self, time: f64, frequency: Hz) -> f64;
+    fn signal(&self, time: f64, frequency: Hz, phase: f64) -> f64;
 }
 
 impl dyn Oscillator {
@@ -46,15 +46,15 @@ impl dyn Oscillator {
 
 pub struct Sine;
 impl Oscillator for Sine {
-    fn signal(&self, time: f64, frequency: Hz) -> f64 {
-        (time * frequency * 2.0 * PI).sin()
+    fn signal(&self, time: f64, frequency: Hz, phase: f64) -> f64 {
+        ((time + phase) * frequency * 2.0 * PI).sin()
     }
 }
 
 pub struct Saw;
 impl Oscillator for Saw {
-    fn signal(&self, time: f64, frequency: Hz) -> f64 {
-        ((time * frequency) % 1.)
+    fn signal(&self, time: f64, frequency: Hz, phase: f64) -> f64 {
+        (((time + phase) * frequency) % 1.)
     }
 }
 
@@ -62,23 +62,25 @@ pub struct Instrument {
     oscillator: Box<dyn Oscillator>,
     envelope: Envelope,
     frequency: Hz,
+    phase: f64,
     clock: Clock,
 }
 
 
 impl Instrument {
-    pub fn new(sample_rate: Hz, wave: Wave, frequency: Hz) -> Instrument {
+    pub fn new(sample_rate: Hz, wave: Wave, frequency: Hz, phase: f64) -> Instrument {
         Instrument {
             oscillator: Oscillator::new(wave),
             envelope: Envelope::new(1., 1.),
             frequency,
+            phase,
             clock: Clock::new(sample_rate),
         }
     }
 
     pub fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let signal = self.oscillator.signal(self.clock.get(), self.frequency);
+        let signal = self.oscillator.signal(self.clock.get(), self.frequency, self.phase);
         self.envelope.apply(self.clock.get(), signal)
     }
 }
@@ -100,13 +102,13 @@ impl State {
 
     pub fn interpret(&mut self, command: Command) {
         match command {
-            Command::Play(wave, sample_rate, frequency) => {
-                self.instruments.push(Instrument::new(sample_rate, wave, frequency));
+            Command::Play(wave, sample_rate, frequency, phase) => {
+                self.instruments.push(Instrument::new(sample_rate, wave, frequency, phase));
             }
         }
     }
 }
 
 pub enum Command {
-    Play(Wave, Hz, Hz)
+    Play(Wave, Hz, Hz, Hz)
 }
