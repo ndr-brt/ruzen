@@ -10,7 +10,7 @@ use rand::Rng;
 use crate::out::Out;
 use std::thread::sleep;
 use std::time::Duration;
-use crate::synth::Synth;
+use crate::synth::{Synth, Command, Oscillators};
 
 mod clock;
 mod envelope;
@@ -19,7 +19,7 @@ mod synth;
 
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
-    let (cmd_out, cmd_in) = channel::<f64>();
+    let (cmd_out, cmd_in) = channel::<Command>();
     let (sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
     let sample_rate = out.sample_rate();
     let synth = Synth::new(sample_rate);
@@ -31,7 +31,8 @@ fn main() {
     loop {
         sleep(Duration::from_millis(rng.gen_range(500, 1500)));
         let frequency: f64 = rng.gen_range(110.0, 880.0);
-        match cmd_out.send(frequency) {
+        let command = Command::Play(Oscillators::Sine, sample_rate, frequency);
+        match cmd_out.send(command) {
             Ok(_) => println!("Sent new sine with frequency {}", frequency),
             Err(err) => println!("Error sending command {}", err),
         };

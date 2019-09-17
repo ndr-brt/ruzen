@@ -22,10 +22,6 @@ impl Envelope {
         sound * value
     }
 
-    pub fn is_valid(&self) -> bool {
-        self.attack != 0. && self.release != 0.
-    }
-
 }
 
 // TODO: add tests! pordios!

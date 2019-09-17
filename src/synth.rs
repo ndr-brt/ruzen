@@ -12,11 +12,11 @@ impl Synth {
         Synth { sample_rate }
     }
 
-    pub fn loop_forever(&self, command_in: Receiver<f64>, signal_out: SyncSender<f64>) {
+    pub fn loop_forever(&self, command_in: Receiver<Command>, signal_out: SyncSender<f64>) {
         let mut state = State::new(self.sample_rate);
         loop {
-            if let Ok(frequency) = command_in.try_recv() {
-                state.add_sine(frequency);
+            if let Ok(command) = command_in.try_recv() {
+                state.interpret(command);
             }
 
             let result = signal_out.send(state.next_sample());
@@ -29,57 +29,75 @@ impl Synth {
 
 }
 
-pub struct State {
-    sample_rate: Hz,
-    waves: Vec<Sine>,
+pub enum Oscillators { Sine }
+
+pub trait Oscillator {
+    fn signal(&self, time: f64, frequency: Hz) -> f64;
 }
 
-impl State {
-    pub fn new(sample_rate: Hz) -> State {
-        State {
-            sample_rate,
-            waves: Vec::new() // TODO: free the finished synths!
-        }
+impl dyn Oscillator {
+    pub fn new() -> Box<dyn Oscillator> {
+        Box::new(Sine)
     }
 
-    pub fn next_sample(&mut self) -> f64 {
-        self.waves.iter_mut().map(|w| w.signal()).sum()
-    }
+}
 
-    pub fn add_sine(&mut self, frequency: f64) {
-        let sine = Sine::new(self.sample_rate, frequency).envelope(Envelope::new(1., 1.));
-        self.waves.push(sine);
+pub struct Sine;
+impl Oscillator for Sine {
+    fn signal(&self, time: f64, frequency: Hz) -> f64 {
+        (time * frequency * 2.0 * PI).sin() // TODO: parameterize frequency
     }
 }
 
-#[derive(Clone,Copy)]
-pub struct Sine{
-    frequency: f64,
-    clock: Clock,
+pub struct Instrument {
+    oscillator: Box<dyn Oscillator>,
     envelope: Envelope,
+    frequency: Hz,
+    clock: Clock,
 }
 
-impl Sine {
-    pub fn new(sample_rate: Hz, frequency: Hz) -> Sine {
-        Sine {
+
+impl Instrument {
+    pub fn sine(sample_rate: Hz, frequency: Hz) -> Instrument {
+        Instrument {
+            oscillator: Oscillator::new(),
+            envelope: Envelope::new(1., 1.),
             frequency,
             clock: Clock::new(sample_rate),
-            envelope: Envelope::new(0.0, 0.0)
         }
     }
 
     pub fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let signal = (self.clock.get() * self.frequency * 2.0 * PI).sin();
-        if self.envelope.is_valid() {
-            self.envelope.apply(self.clock.get(), signal)
-        } else {
-            signal
+        let signal = self.oscillator.signal(self.clock.get(), self.frequency);
+        self.envelope.apply(self.clock.get(), signal)
+    }
+}
+
+pub struct State {
+    instruments: Vec<Instrument>,
+}
+
+impl State {
+    pub fn new(sample_rate: Hz) -> State {
+        State {
+            instruments: Vec::new() // TODO: free the finished instruments!
         }
     }
 
-    pub fn envelope(&mut self, envelope: Envelope) -> Self {
-        self.envelope = envelope;
-        self.clone()
+    pub fn next_sample(&mut self) -> f64 {
+        self.instruments.iter_mut().map(|w| w.signal()).sum()
     }
+
+    pub fn interpret(&mut self, command: Command) {
+        match command {
+            Command::Play(_instrument, sample_rate, frequency) => {
+                self.instruments.push(Instrument::sine(sample_rate, frequency));
+            }
+        }
+    }
+}
+
+pub enum Command {
+    Play(Oscillators, Hz, Hz)
 }
