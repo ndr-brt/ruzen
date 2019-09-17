@@ -56,5 +56,5 @@ impl State {
 }
 
 pub enum Command {
-    Play(Wave, Hz, Hz)
+    Play(Wave, Wave, Hz)
 }

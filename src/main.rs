@@ -32,10 +32,11 @@ fn main() {
 
     let mut rng = rand::thread_rng();
     loop {
-        sleep(Duration::from_millis(rng.gen_range(500, 1500)));
+        //sleep(Duration::from_millis(rng.gen_range(500, 1500)));
+        sleep(Duration::from_millis(2000));
         let frequency: f64 = rng.gen_range(110.0, 440.0);
         let phase: f64 = rng.gen_range(0., 3.14);
-        let command = Command::Play(Wave::Saw, frequency, phase);
+        let command = Command::Play(Wave::Sine(frequency, phase), Wave::Sine(5., 0.), phase);
         match cmd_out.send(command) {
             Ok(_) => println!("Sent new sine with frequency {}", frequency),
             Err(err) => println!("Error sending command {}", err),
