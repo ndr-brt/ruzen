@@ -24,4 +24,18 @@ impl Envelope {
 
 }
 
-// TODO: add tests! pordios!
+#[cfg(test)]
+mod tests {
+    use super::Envelope;
+
+    #[test]
+    fn ar_envelope() {
+        let envelope = Envelope::new(1.0, 1.0);
+        assert_eq!(0.0, envelope.apply(0.0, 1.));
+        assert_eq!(0.5, envelope.apply(0.5, 1.));
+        assert_eq!(1.0, envelope.apply(1.0, 1.));
+        assert_eq!(0.5, envelope.apply(1.5, 1.));
+        assert_eq!(0.0, envelope.apply(2.0, 1.));
+    }
+
+}
