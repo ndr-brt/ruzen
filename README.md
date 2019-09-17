@@ -2,4 +2,6 @@
 
 ## TODO:
 - put some tests (and embrace tdd as well)
-- add phase to oscillators
+- introduce osc to control synth
+- set frequency and phase modulable
+- free instruments when their execution is completed
