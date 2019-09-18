@@ -1,5 +1,5 @@
 [package]
-name = "ruzen"
+name = "client"
 version = "0.1.0"
 authors = ["Andrea Bertagnolli <andrea.bertagnolli@cherrychain.it>"]
 edition = "2018"
@@ -7,9 +7,4 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hound = "3.4.0"
-portaudio = "0.7.0"
-cpal = "0.10.0"
-failure = "0.1.5"
-rand = "0.7.1"
 rosc = "0.2.0"

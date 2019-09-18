@@ -12,10 +12,15 @@ use std::thread::sleep;
 use std::time::Duration;
 use crate::synth::{Synth, Command };
 use crate::oscillator::Wave;
+use std::net::{SocketAddrV4, UdpSocket};
+use std::str::FromStr;
+use rosc::OscPacket;
+use crate::osc_server::OscServer;
 
 mod clock;
 mod envelope;
 mod out;
+mod osc_server;
 mod instrument;
 mod oscillator;
 mod synth;
@@ -30,16 +35,7 @@ fn main() {
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(cmd_in, sig_out));
 
-    let mut rng = rand::thread_rng();
-    loop {
-        //sleep(Duration::from_millis(rng.gen_range(500, 1500)));
-        sleep(Duration::from_millis(2000));
-        let frequency: f64 = rng.gen_range(110.0, 440.0);
-        let phase: f64 = rng.gen_range(0., 3.14);
-        let command = Command::Play(Wave::Sine(frequency, phase), Wave::Sine(rng.gen_range(0., 10.), 1.), phase);
-        match cmd_out.send(command) {
-            Ok(_) => println!("Sent new sine with frequency {}", frequency),
-            Err(err) => println!("Error sending command {}", err),
-        };
-    }
+
+    let osc_server = OscServer::new("127.0.0.1:38042");
+    osc_server.listen(cmd_out);
 }
