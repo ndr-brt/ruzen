@@ -35,7 +35,6 @@ fn main() {
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(cmd_in, sig_out));
 
-
     let osc_server = OscServer::new("127.0.0.1:38042");
     osc_server.listen(cmd_out);
 }
