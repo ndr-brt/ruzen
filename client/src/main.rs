@@ -2,10 +2,9 @@ extern crate rosc;
 
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
-use std::net::{SocketAddrV4, UdpSocket};
-use std::str::FromStr;
+use std::net::{UdpSocket};
 use std::time::Duration;
-use std::{env, f32, thread};
+use std::{f32, thread};
 
 const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
@@ -20,13 +19,43 @@ fn main() {
     }
 }
 
-fn play(frequency: f32) {
-    let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-        addr: "/synth/sine".to_string(),
-        args: Some(vec![OscType::Float(frequency), OscType::Float(0.)]),
-    })).unwrap();
+#[derive(Debug, Clone, Copy)]
+struct Synth<'a> {
+    name: &'a str,
+    frequency: f32, // TODO: should be f64!
+    phase: f32,
+    attack: f64,
+    release: f64,
+}
 
-    send_osc_message(msg_buf)
+impl Synth<'_> {
+    pub fn new(name: &str) -> Synth {
+        Synth {
+            name,
+            frequency: 440.0,
+            phase: 0.0,
+            attack: 1.0,
+            release: 1.0
+        }
+    }
+
+    pub fn freq(&mut self, frequency: f32) -> Synth {
+        self.frequency = frequency;
+        *self
+    }
+
+    pub fn play(&self) {
+        let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+            addr: "/synth/sine".to_string(),
+            args: Some(vec![OscType::Float(self.frequency), OscType::Float(0.)]),
+        })).unwrap();
+
+        send_osc_message(msg_buf)
+    }
+}
+
+fn synth(name: &str) -> Synth {
+    Synth::new(name)
 }
 
 fn send_osc_message(msg_buf: Vec<u8>) {
