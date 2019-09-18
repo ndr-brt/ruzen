@@ -26,5 +26,9 @@ fn play(frequency: f32) {
         args: Some(vec![OscType::Float(frequency), OscType::Float(0.)]),
     })).unwrap();
 
+    send_osc_message(msg_buf)
+}
+
+fn send_osc_message(msg_buf: Vec<u8>) {
     UdpSocket::bind(HOST_ADDRESS).unwrap().send_to(&msg_buf, SERVER_ADDRESS);
 }
