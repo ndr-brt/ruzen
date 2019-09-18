@@ -1,10 +1,13 @@
 extern crate rosc;
+extern crate rand;
 
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
 use std::net::{UdpSocket};
 use std::time::Duration;
-use std::{f32, thread};
+use std::{f32};
+use rand::thread_rng;
+use crate::rand::Rng;
 
 const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
@@ -13,9 +16,10 @@ fn main() {
     let steps = 128;
     let step_size: f32 = 2.0 * f32::consts::PI / steps as f32;
     for i in 0.. {
-        play(440. + ((i as f32)*4.));
 
-        thread::sleep(Duration::from_millis(1000));
+        synth("sine").freq(rrand(330., 550.) as f32).play();
+
+        sleep(1000);
     }
 }
 
@@ -52,6 +56,14 @@ impl Synth<'_> {
 
         send_osc_message(msg_buf)
     }
+}
+
+fn sleep(time: u64) {
+    std::thread::sleep(Duration::from_millis(time));
+}
+
+fn rrand(from: f64, to: f64) -> f64 {
+    thread_rng().gen_range::<f64, f64, f64>(from, to)
 }
 
 fn synth(name: &str) -> Synth {
