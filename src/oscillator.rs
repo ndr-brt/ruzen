@@ -10,7 +10,8 @@ pub struct Amplitude {
 pub enum Wave {
     None,
     Sine(Hz, f64),
-    Saw(Hz, f64)
+    Saw(Hz, f64),
+    Line(f64, f64, f64)
 }
 
 pub trait Oscillator {
@@ -23,6 +24,7 @@ impl dyn Oscillator {
         match wave {
             Wave::Sine(frequency, phase) => Box::new(Sine { frequency, phase }),
             Wave::Saw(frequency, phase) => Box::new(Saw { frequency, phase }),
+            Wave::Line(start, end, length) => Box::new(Line { start, end, length }),
             Wave::None => Box::new(None)
         }
     }
@@ -64,5 +66,20 @@ impl Oscillator for Saw {
 
     fn frequency(&self) -> f64 {
         self.frequency
+    }
+}
+
+pub struct Line {
+    start: f64,
+    end: f64,
+    length: f64,
+}
+impl Oscillator for Line {
+    fn signal(&self, time: f64, frequency: Hz, phase: f64) -> f64 {
+        (self.start + (time * (self.end - self.start)/self.length))
+    }
+
+    fn frequency(&self) -> f64 {
+        0.
     }
 }

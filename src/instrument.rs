@@ -1,4 +1,4 @@
-use crate::oscillator::{Oscillator, Wave, Amplitude};
+use crate::oscillator::{ Oscillator, Wave };
 use crate::envelope::Envelope;
 use crate::clock::{Hz, Clock};
 
@@ -30,7 +30,7 @@ impl Instrument {
         Instrument {
             oscillator: Oscillator::new(Wave::Sine(60.0, 0.)),
             envelope: Envelope::new(0.005, 1.),
-            frequency_modulation: Oscillator::new(Wave::None),
+            frequency_modulation: Oscillator::new(Wave::Line(1.,0.,1.)),
             phase: 0.,
             clock: Clock::new(sample_rate),
         }
