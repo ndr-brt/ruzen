@@ -5,7 +5,7 @@ use crate::signal::Signal;
 
 #[derive(PartialEq, Debug)]
 pub enum Instruments {
-    Kick
+    Kick, Snare
 }
 
 pub trait Play {
@@ -58,6 +58,22 @@ impl Play for Kick {
 }
 pub(crate) fn kick(sample_rate: f64) -> Kick {
     Kick {
+        clock: Clock::new(sample_rate)
+    }
+}
+
+pub struct Snare {
+    clock: Clock
+}
+impl Play for Snare {
+    fn signal(&mut self) -> f64 {
+        self.clock.tick();
+        let signal = Signal::Pulse(165., 0.).value_at(self.clock.get());
+        Envelope::new(0.05, 1.).apply(self.clock.get(), signal * Signal::Line(1.0, 0., 1.).value_at(self.clock.get()))
+    }
+}
+pub(crate) fn snare(sample_rate: f64) -> Snare {
+    Snare {
         clock: Clock::new(sample_rate)
     }
 }

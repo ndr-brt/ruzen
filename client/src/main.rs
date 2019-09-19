@@ -20,7 +20,7 @@ fn main() {
     for i in 0.. {
         instrument("kick").play();
         sleep(500);
-        instrument("kick").play();
+        instrument("snare").play();
         sleep(500);
 
         synth("sine").freq(rrand(220., 440.)).play();

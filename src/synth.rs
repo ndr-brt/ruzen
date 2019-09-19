@@ -1,7 +1,7 @@
 use crate::clock::{Hz, Clock};
 use std::sync::mpsc::{SyncSender, Receiver};
 use crate::oscillator::{Wave};
-use crate::instrument::{Play, Instruments, Sine, Kick, sine, saw, kick};
+use crate::instrument::{Play, Instruments, Sine, Kick, sine, saw, kick, snare};
 use crate::synth::Command::Instrument;
 
 pub struct Synth {
@@ -57,7 +57,11 @@ impl State {
                 }
             }
             Command::Instrument(name) => {
-                self.instruments.push(Box::new(kick(self.sample_rate)))
+                match name {
+                    Instruments::Kick => self.instruments.push(Box::new(kick(self.sample_rate))),
+                    Instruments::Snare => self.instruments.push(Box::new(snare(self.sample_rate))),
+                }
+
             }
         }
     }

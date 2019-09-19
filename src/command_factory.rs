@@ -5,7 +5,7 @@ use crate::oscillator::Wave;
 use rosc::OscType;
 use crate::clock::Hz;
 use crate::instrument::Instruments;
-use crate::instrument::Instruments::Kick;
+use crate::instrument::Instruments::{Kick, Snare};
 
 pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn Error>> {
     match packet {
@@ -44,6 +44,9 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
                 },
                 Some("kick") => {
                     Result::Ok(Command::Instrument(Kick))
+                },
+                Some("snare") => {
+                    Result::Ok(Command::Instrument(Snare))
                 }
                 Some(_) => {
                     Result::Err(Box::from("instrument not found"))
