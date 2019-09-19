@@ -13,6 +13,7 @@ mod clock;
 mod envelope;
 mod out;
 mod osc_server;
+mod command_factory;
 mod instrument;
 mod oscillator;
 mod synth;
