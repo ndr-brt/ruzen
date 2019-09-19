@@ -22,12 +22,6 @@ fn main() {
         sleep(500);
         instrument("snare").play();
         sleep(500);
-
-        synth("sine").freq(rrand(220., 440.)).play();
-        sleep(300);
-
-        synth("saw").freq(rrand(220., 440.)).play();
-        sleep(500);
     }
 }
 
@@ -38,32 +32,6 @@ struct Synth<'a> {
     phase: f32,
     attack: f64,
     release: f64,
-}
-
-impl Synth<'_> {
-    pub fn new(name: &str) -> Synth {
-        Synth {
-            name,
-            frequency: 440.0,
-            phase: 0.0,
-            attack: 1.0,
-            release: 1.0
-        }
-    }
-
-    pub fn freq(&mut self, frequency: Hz) -> Synth {
-        self.frequency = frequency;
-        *self
-    }
-
-    pub fn play(&self) {
-        let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-            addr: format!("/synth/{}", self.name),
-            args: Some(vec![OscType::Double(self.frequency), OscType::Float(0.)]),
-        })).unwrap();
-
-        send_osc_message(msg_buf)
-    }
 }
 
 struct Instrument<'a> {
@@ -92,10 +60,6 @@ fn sleep(time: u64) {
 
 fn rrand(from: f64, to: f64) -> f64 {
     thread_rng().gen_range::<f64, f64, f64>(from, to)
-}
-
-fn synth(name: &str) -> Synth {
-    Synth::new(name)
 }
 
 fn instrument(name: &str) -> Instrument {
