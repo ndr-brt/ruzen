@@ -1,27 +1,22 @@
-#[derive(Clone,Copy)]
-pub struct Envelope {
-    attack: f64,
-    release: f64
+pub enum Envelope {
+    AR(f64, f64)
 }
 
+
 impl Envelope {
-    pub fn new(attack: f64, release: f64) -> Envelope {
-        Envelope {
-            attack,
-            release
+    pub(crate) fn value_at(&self, clock: f64) -> f64 {
+        match self {
+            Self::AR(attack, release) => {
+                if clock <= *attack {
+                    clock / attack
+                } else if clock <= attack + release {
+                    (attack + release) - (clock / release)
+                } else {
+                    0.
+                }
+            }
         }
     }
-
-    pub fn apply(&self, elapsed: f64, sound: f64) -> f64 {
-        let mut value: f64 = 0.0;
-        if elapsed <= self.attack {
-            value = elapsed / self.attack;
-        } else if elapsed <= self.attack + self.release {
-            value = (self.attack + self.release) - (elapsed / self.release)
-        }
-        sound * value
-    }
-
 }
 
 #[cfg(test)]
@@ -30,12 +25,12 @@ mod tests {
 
     #[test]
     fn ar_envelope() {
-        let envelope = Envelope::new(1.0, 1.0);
-        assert_eq!(0.0, envelope.apply(0.0, 1.));
-        assert_eq!(0.5, envelope.apply(0.5, 1.));
-        assert_eq!(1.0, envelope.apply(1.0, 1.));
-        assert_eq!(0.5, envelope.apply(1.5, 1.));
-        assert_eq!(0.0, envelope.apply(2.0, 1.));
+        let envelope = Envelope::AR(1.0, 1.0);
+        assert_eq!(0.0, envelope.value_at(0.0));
+        assert_eq!(0.5, envelope.value_at(0.5));
+        assert_eq!(1.0, envelope.value_at(1.0));
+        assert_eq!(0.5, envelope.value_at(1.5));
+        assert_eq!(0.0, envelope.value_at(2.0));
     }
 
 }

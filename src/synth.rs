@@ -57,6 +57,7 @@ impl State {
                 }
             }
             Command::Instrument(name) => {
+
                 match name {
                     Instruments::Kick => self.instruments.push(Box::new(kick(self.sample_rate))),
                     Instruments::Snare => self.instruments.push(Box::new(snare(self.sample_rate))),

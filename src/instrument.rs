@@ -1,7 +1,8 @@
-use crate::oscillator::{ Oscillator, Wave };
+use crate::oscillator::{ Oscillator };
 use crate::envelope::Envelope;
-use crate::clock::{Hz, Clock};
+use crate::clock::{Clock};
 use crate::signal::Signal;
+use std::any::Any;
 
 #[derive(PartialEq, Debug)]
 pub enum Instruments {
@@ -19,7 +20,9 @@ pub struct Sine {
 impl Play for Sine {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        Envelope::new(1., 1.).apply(self.clock.get(), Signal::Sine(self.frequency, 0.).value_at(self.clock.get()))
+        let signal = Signal::Sine(self.frequency, 0.).value_at(self.clock.get());
+        let envelope = Envelope::AR(1., 1.).value_at(self.clock.get());
+        signal * envelope
     }
 }
 pub(crate) fn sine(sample_rate: f64, frequency: f64) -> Sine {
@@ -36,7 +39,9 @@ pub struct Saw {
 impl Play for Saw {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        Envelope::new(1., 1.).apply(self.clock.get(), Signal::Saw(self.frequency, 0.).value_at(self.clock.get()))
+        let signal = Signal::Saw(self.frequency, 0.).value_at(self.clock.get());
+        let envelope = Envelope::AR(1., 1.).value_at(self.clock.get());
+        signal * envelope
     }
 }
 pub(crate) fn saw(sample_rate: f64, frequency: f64) -> Saw {
@@ -52,8 +57,10 @@ pub struct Kick {
 impl Play for Kick {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let signal = Signal::Sine(65., 0.).value_at(self.clock.get());
-        Envelope::new(0.05, 1.).apply(self.clock.get(), signal * Signal::Line(1.0, 0., 1.).value_at(self.clock.get()))
+        let signal = Signal::Sine(65., 0.).value_at(self.clock.get()) *
+            Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
+        let envelope = Envelope::AR(0.05, 1.).value_at(self.clock.get());
+        signal * envelope
     }
 }
 pub(crate) fn kick(sample_rate: f64) -> Kick {
@@ -68,8 +75,10 @@ pub struct Snare {
 impl Play for Snare {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let signal = Signal::Pulse(165., 0.).value_at(self.clock.get());
-        Envelope::new(0.05, 1.).apply(self.clock.get(), signal * Signal::Line(1.0, 0., 1.).value_at(self.clock.get()))
+        let signal = Signal::Pulse(165., 0.).value_at(self.clock.get()) *
+            Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
+        let envelope = Envelope::AR(0.05, 1.).value_at(self.clock.get());
+        signal * envelope
     }
 }
 pub(crate) fn snare(sample_rate: f64) -> Snare {

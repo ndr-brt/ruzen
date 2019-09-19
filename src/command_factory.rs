@@ -90,6 +90,7 @@ mod tests {
         assert_eq!(result.unwrap(), Command::Play(Wave::Sine(440., 0.), Wave::None, 1.))
     }
 
+    #[test]
     fn play_kick() {
         let message = OscMessage {
             addr: "/instrument/kick".to_string(),
