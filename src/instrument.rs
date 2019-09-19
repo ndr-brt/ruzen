@@ -10,7 +10,6 @@ pub enum Instruments {
 pub struct Instrument {
     oscillator: Box<dyn Oscillator>,
     envelope: Envelope,
-    amplitude: Amplitude,
     frequency_modulation: Box<dyn Oscillator>,
     phase: f64,
     clock: Clock,
@@ -21,9 +20,18 @@ impl Instrument {
         Instrument {
             oscillator: Oscillator::new(wave),
             envelope: Envelope::new(0.005, 1.),
-            amplitude: Amplitude { min: -1., max: 1. },
             frequency_modulation: Oscillator::new(frequency_modulation),
             phase,
+            clock: Clock::new(sample_rate),
+        }
+    }
+
+    pub fn kick(sample_rate: Hz) -> Instrument {
+        Instrument {
+            oscillator: Oscillator::new(Wave::Sine(60.0, 0.)),
+            envelope: Envelope::new(0.005, 1.),
+            frequency_modulation: Oscillator::new(Wave::None),
+            phase: 0.,
             clock: Clock::new(sample_rate),
         }
     }

@@ -52,7 +52,7 @@ impl State {
                 self.instruments.push(Instrument::new(self.sample_rate, wave, frequency, phase));
             }
             Command::Instrument(name) => {
-                self.instruments.push(Instrument::new(self.sample_rate, Wave::Sine(65.0, 0.), Wave::None, 0.))
+                self.instruments.push(Instrument::kick(self.sample_rate))
             }
         }
     }
