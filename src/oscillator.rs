@@ -6,6 +6,7 @@ pub struct Amplitude {
     pub max: f64,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum Wave {
     None,
     Sine(Hz, f64),

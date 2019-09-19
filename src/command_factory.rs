@@ -45,3 +45,24 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::message_to_command;
+    use rosc::{OscMessage, OscPacket, OscType};
+    use crate::synth::Command;
+    use crate::oscillator::Wave;
+
+    #[test]
+    fn test() {
+        let message = OscMessage {
+            addr: "/synth/sine".to_string(),
+            args: Some(vec![OscType::Double(440.0), OscType::Float(0.)])
+        };
+
+        let result = message_to_command(OscPacket::Message(message));
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Command::Play(Wave::Sine(440., 0.), Wave::None, 0.), "aaaa")
+    }
+}

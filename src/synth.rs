@@ -55,6 +55,7 @@ impl State {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum Command {
     Play(Wave, Wave, Hz)
 }
