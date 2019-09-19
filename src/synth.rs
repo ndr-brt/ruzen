@@ -1,7 +1,7 @@
 use crate::clock::{Hz};
 use std::sync::mpsc::{SyncSender, Receiver};
 use crate::oscillator::{Wave};
-use crate::instrument::Instrument;
+use crate::instrument::{Instrument, Instruments};
 
 pub struct Synth {
     sample_rate: Hz,
@@ -51,11 +51,15 @@ impl State {
             Command::Play(wave, frequency, phase) => {
                 self.instruments.push(Instrument::new(self.sample_rate, wave, frequency, phase));
             }
+            Command::Instrument(name) => {
+                self.instruments.push(Instrument::new(self.sample_rate, Wave::Sine(65.0, 0.), Wave::None, 0.))
+            }
         }
     }
 }
 
 #[derive(PartialEq, Debug)]
 pub enum Command {
-    Play(Wave, Wave, Hz)
+    Play(Wave, Wave, Hz),
+    Instrument(Instruments)
 }

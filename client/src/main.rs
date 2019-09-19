@@ -23,16 +23,20 @@ fn main() {
 
         sleep(700);*/
 
-        synth("saw").freq(rrand(330., 550.)).play();
+        /*synth("saw").freq(rrand(330., 550.)).play();
 
-        sleep(700);
+        sleep(700);*/
+
+        instrument("kick").play();
+
+        sleep(1000);
     }
 }
 
 #[derive(Debug, Clone, Copy)]
 struct Synth<'a> {
     name: &'a str,
-    frequency: Hz, // TODO: should be f64!
+    frequency: Hz,
     phase: f32,
     attack: f64,
     release: f64,
@@ -64,6 +68,26 @@ impl Synth<'_> {
     }
 }
 
+struct Instrument<'a> {
+    name: &'a str
+}
+impl Instrument<'_> {
+    pub fn new(name: &str) -> Instrument {
+        Instrument {
+            name
+        }
+    }
+
+    pub fn play(&self) {
+        let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+            addr: format!("/instrument/{}", self.name),
+            args: Some(vec![]),
+        })).unwrap();
+
+        send_osc_message(msg_buf)
+    }
+}
+
 fn sleep(time: u64) {
     std::thread::sleep(Duration::from_millis(time));
 }
@@ -74,6 +98,10 @@ fn rrand(from: f64, to: f64) -> f64 {
 
 fn synth(name: &str) -> Synth {
     Synth::new(name)
+}
+
+fn instrument(name: &str) -> Instrument {
+    Instrument::new(name)
 }
 
 fn send_osc_message(msg_buf: Vec<u8>) {

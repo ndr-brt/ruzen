@@ -2,6 +2,11 @@ use crate::oscillator::{Oscillator, Wave, Amplitude};
 use crate::envelope::Envelope;
 use crate::clock::{Hz, Clock};
 
+#[derive(PartialEq, Debug)]
+pub enum Instruments {
+    Kick
+}
+
 pub struct Instrument {
     oscillator: Box<dyn Oscillator>,
     envelope: Envelope,
@@ -15,7 +20,7 @@ impl Instrument {
     pub fn new(sample_rate: Hz, wave: Wave, frequency_modulation: Wave, phase: f64) -> Instrument {
         Instrument {
             oscillator: Oscillator::new(wave),
-            envelope: Envelope::new(1., 1.),
+            envelope: Envelope::new(0.005, 1.),
             amplitude: Amplitude { min: -1., max: 1. },
             frequency_modulation: Oscillator::new(frequency_modulation),
             phase,

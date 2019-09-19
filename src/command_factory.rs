@@ -4,35 +4,53 @@ use std::error::Error;
 use crate::oscillator::Wave;
 use rosc::OscType;
 use crate::clock::Hz;
+use crate::instrument::Instruments;
+use crate::instrument::Instruments::Kick;
 
 pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn Error>> {
     match packet {
         OscPacket::Message(msg) => {
             println!("OSC address: {}", msg.addr);
-            let wave = match msg.addr.split('/').last() {
-                Some("sine") => Wave::Sine,
-                Some("saw") => Wave::Saw,
-                Some(_) => {
-                    println!("instrument not found, default is sine");
-                    Wave::Sine
-                }
-                None => {
-                    println!("instrument not found, default is sine");
-                    Wave::Sine
-                }
-            };
+            let addressTokens = msg.addr.split('/');
 
-            match msg.args {
-                Some(args) => {
-                    println!("OSC arguments: {:?}", args);
-                    let frequency = to_double(args[0].clone());
-                    let phase = to_double(args[1].clone());
+            match addressTokens.last() {
+                Some("sine") => {
+                    match msg.args {
+                        Some(args) => {
+                            println!("OSC arguments: {:?}", args);
+                            let frequency = to_double(args[0].clone());
+                            let phase = to_double(args[1].clone());
 
-                    Result::Ok(Command::Play(wave(frequency, 0.), Wave::None, 1.))
-                }
-                None => {
-                    Result::Err(Box::from("No arguments in message."))
+                            Result::Ok(Command::Play(Wave::Sine(frequency, 0.), Wave::None, 1.))
+                        }
+                        None => {
+                            Result::Err(Box::from("No arguments in message."))
+                        },
+                    }
                 },
+                Some("saw") => {
+                    match msg.args {
+                        Some(args) => {
+                            println!("OSC arguments: {:?}", args);
+                            let frequency = to_double(args[0].clone());
+                            let phase = to_double(args[1].clone());
+
+                            Result::Ok(Command::Play(Wave::Saw(frequency, 0.), Wave::None, 1.))
+                        }
+                        None => {
+                            Result::Err(Box::from("No arguments in message."))
+                        },
+                    }
+                },
+                Some("kick") => {
+                    Result::Ok(Command::Instrument(Kick))
+                }
+                Some(_) => {
+                    Result::Err(Box::from("instrument not found"))
+                }
+                None => {
+                    Result::Err(Box::from("instrument not found"))
+                }
             }
         }
         OscPacket::Bundle(bundle) => {
@@ -54,6 +72,7 @@ mod tests {
     use rosc::{OscMessage, OscPacket, OscType};
     use crate::synth::Command;
     use crate::oscillator::Wave;
+    use crate::instrument::Instruments;
 
     #[test]
     fn play_sine_with_frequency_and_phase() {
@@ -65,6 +84,18 @@ mod tests {
         let result = message_to_command(OscPacket::Message(message));
 
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Play(Wave::Sine(440., 0.), Wave::None, 1.), "aaaa")
+        assert_eq!(result.unwrap(), Command::Play(Wave::Sine(440., 0.), Wave::None, 1.))
+    }
+
+    fn play_kick() {
+        let message = OscMessage {
+            addr: "/instrument/kick".to_string(),
+            args: Some(vec![])
+        };
+
+        let result = message_to_command(OscPacket::Message(message));
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Command::Instrument(Instruments::Kick))
     }
 }
