@@ -2,7 +2,7 @@ use std::sync::mpsc::Sender;
 use crate::synth::Command;
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
-use rosc::{OscPacket, OscType};
+use rosc::{OscPacket};
 use crate::oscillator::Wave;
 use rosc::OscType::Float;
 use std::error::Error;
@@ -50,12 +50,25 @@ impl OscServer {
         match packet {
             OscPacket::Message(msg) => {
                 println!("OSC address: {}", msg.addr);
+                let wave = match msg.addr.split('/').last() {
+                    Some("sine") => Wave::Sine,
+                    Some("saw") => Wave::Saw,
+                    Some(_) => {
+                        println!("instrument not found, default is sine");
+                        Wave::Sine
+                    }
+                    None => {
+                        println!("instrument not found, default is sine");
+                        Wave::Sine
+                    }
+                };
+
                 match msg.args {
                     Some(args) => {
                         println!("OSC arguments: {:?}", args);
                         match args[0] {
                             Float(frequency) => {
-                                Result::Ok(Command::Play(Wave::Sine(frequency as f64, 0.0), Wave::None, 0.))
+                                Result::Ok(Command::Play(wave(frequency as f64, 0.), Wave::None, 0.))
                             }
                             _ => {
                                 Result::Err(Box::from("Not a valid frequency"))
@@ -73,6 +86,7 @@ impl OscServer {
             }
         }
     }
+
 }
 
 /*    let mut rng = rand::thread_rng();

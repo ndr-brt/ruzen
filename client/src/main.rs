@@ -19,7 +19,11 @@ fn main() {
 
         synth("sine").freq(rrand(330., 550.) as f32).play();
 
-        sleep(1000);
+        sleep(700);
+
+        synth("saw").freq(rrand(330., 550.) as f32).play();
+
+        sleep(700);
     }
 }
 
@@ -50,7 +54,7 @@ impl Synth<'_> {
 
     pub fn play(&self) {
         let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-            addr: "/synth/sine".to_string(),
+            addr: format!("/synth/{}", self.name),
             args: Some(vec![OscType::Float(self.frequency), OscType::Float(0.)]),
         })).unwrap();
 

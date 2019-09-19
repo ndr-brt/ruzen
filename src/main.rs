@@ -5,16 +5,8 @@ extern crate rand;
 use std::sync::mpsc::{sync_channel, channel};
 use std::thread;
 
-use rand::Rng;
-
 use crate::out::Out;
-use std::thread::sleep;
-use std::time::Duration;
 use crate::synth::{Synth, Command };
-use crate::oscillator::Wave;
-use std::net::{SocketAddrV4, UdpSocket};
-use std::str::FromStr;
-use rosc::OscPacket;
 use crate::osc_server::OscServer;
 
 mod clock;
