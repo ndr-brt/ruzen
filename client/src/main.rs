@@ -9,6 +9,8 @@ use std::{f32};
 use rand::thread_rng;
 use crate::rand::Rng;
 
+type Hz = f64;
+
 const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 
@@ -21,7 +23,7 @@ fn main() {
 
         sleep(700);*/
 
-        synth("saw").freq(rrand(330., 550.) as f32).play();
+        synth("saw").freq(rrand(330., 550.)).play();
 
         sleep(700);
     }
@@ -30,7 +32,7 @@ fn main() {
 #[derive(Debug, Clone, Copy)]
 struct Synth<'a> {
     name: &'a str,
-    frequency: f32, // TODO: should be f64!
+    frequency: Hz, // TODO: should be f64!
     phase: f32,
     attack: f64,
     release: f64,
@@ -47,7 +49,7 @@ impl Synth<'_> {
         }
     }
 
-    pub fn freq(&mut self, frequency: f32) -> Synth {
+    pub fn freq(&mut self, frequency: Hz) -> Synth {
         self.frequency = frequency;
         *self
     }
@@ -55,7 +57,7 @@ impl Synth<'_> {
     pub fn play(&self) {
         let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
             addr: format!("/synth/{}", self.name),
-            args: Some(vec![OscType::Float(self.frequency), OscType::Float(0.)]),
+            args: Some(vec![OscType::Double(self.frequency), OscType::Float(0.)]),
         })).unwrap();
 
         send_osc_message(msg_buf)

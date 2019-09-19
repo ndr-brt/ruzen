@@ -2,7 +2,8 @@ use rosc::OscPacket;
 use crate::synth::Command;
 use std::error::Error;
 use crate::oscillator::Wave;
-use rosc::OscType::Float;
+use rosc::OscType;
+use crate::clock::Hz;
 
 pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn Error>> {
     match packet {
@@ -25,8 +26,8 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
                 Some(args) => {
                     println!("OSC arguments: {:?}", args);
                     match args[0] {
-                        Float(frequency) => {
-                            Result::Ok(Command::Play(wave(frequency as f64, 0.), Wave::None, 0.))
+                        OscType::Double(frequency) => {
+                            Result::Ok(Command::Play(wave(frequency as Hz, 0.), Wave::None, 0.))
                         }
                         _ => {
                             Result::Err(Box::from("Not a valid frequency"))
