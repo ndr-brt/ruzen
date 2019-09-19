@@ -25,15 +25,10 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
             match msg.args {
                 Some(args) => {
                     println!("OSC arguments: {:?}", args);
-                    match args[0] {
-                        OscType::Double(frequency) => {
-                            Result::Ok(Command::Play(wave(frequency as Hz, 0.), Wave::None, 0.))
-                        }
-                        _ => {
-                            Result::Err(Box::from("Not a valid frequency"))
-                        }
-                    }
+                    let frequency = to_double(args[0].clone());
+                    let phase = to_double(args[1].clone());
 
+                    Result::Ok(Command::Play(wave(frequency, 0.), Wave::None, 1.))
                 }
                 None => {
                     Result::Err(Box::from("No arguments in message."))
@@ -46,6 +41,13 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
     }
 }
 
+fn to_double(arg: OscType) -> f64 {
+    match arg {
+        OscType::Double(value) => value,
+        _ => 0.
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::message_to_command;
@@ -54,15 +56,15 @@ mod tests {
     use crate::oscillator::Wave;
 
     #[test]
-    fn test() {
+    fn play_sine_with_frequency_and_phase() {
         let message = OscMessage {
             addr: "/synth/sine".to_string(),
-            args: Some(vec![OscType::Double(440.0), OscType::Float(0.)])
+            args: Some(vec![OscType::Double(440.0), OscType::Double(1.)])
         };
 
         let result = message_to_command(OscPacket::Message(message));
 
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Play(Wave::Sine(440., 0.), Wave::None, 0.), "aaaa")
+        assert_eq!(result.unwrap(), Command::Play(Wave::Sine(440., 0.), Wave::None, 1.), "aaaa")
     }
 }
