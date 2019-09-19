@@ -13,11 +13,12 @@ pub struct OscServer {
 
 impl OscServer {
     pub fn new(address_string: &str) -> OscServer {
-        let address = match SocketAddrV4::from_str(address_string) {
-            Ok(addr) => addr,
-            Err(err) => panic!(err),
-        };
-        OscServer { address }
+        OscServer {
+            address: match SocketAddrV4::from_str(address_string) {
+                Ok(address) => address,
+                Err(err) => panic!(err),
+            }
+        }
     }
 
     pub fn listen(&self, command_out: Sender<Command>) {
@@ -88,16 +89,3 @@ impl OscServer {
     }
 
 }
-
-/*    let mut rng = rand::thread_rng();
-    loop {
-        //sleep(Duration::from_millis(rng.gen_range(500, 1500)));
-        sleep(Duration::from_millis(2000));
-        let frequency: f64 = rng.gen_range(110.0, 440.0);
-        let phase: f64 = rng.gen_range(0., 3.14);
-        let command = Command::Play(Wave::Sine(frequency, phase), Wave::Sine(rng.gen_range(0., 10.), 1.), phase);
-        match cmd_out.send(command) {
-            Ok(_) => println!("Sent new sine with frequency {}", frequency),
-            Err(err) => println!("Error sending command {}", err),
-        };
-    }*/
