@@ -1,7 +1,6 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
 use crate::clock::{Clock, Hz};
-use crate::oscillator::Wave;
 use crate::instrument::{snare, kick, Instruments, Play};
 
 pub struct Synth {

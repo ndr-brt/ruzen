@@ -1,7 +1,6 @@
 use rosc::OscPacket;
 use crate::synth::Command;
 use std::error::Error;
-use crate::oscillator::Wave;
 use rosc::OscType;
 use crate::clock::Hz;
 use crate::instrument::Instruments;
