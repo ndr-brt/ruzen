@@ -19,15 +19,14 @@ fn main() {
     let step_size: f32 = 2.0 * f32::consts::PI / steps as f32;
     for i in 0.. {
         instrument("kick").play();
-
+        sleep(100);
+        instrument("kick").play();
         sleep(500);
 
-        synth("sine").freq(rrand(330., 550.)).play();
+        synth("sine").freq(rrand(220., 440.)).play();
+        sleep(300);
 
-        sleep(500);
-
-        synth("saw").freq(rrand(330., 550.)).play();
-
+        synth("saw").freq(rrand(220., 440.)).play();
         sleep(500);
     }
 }
