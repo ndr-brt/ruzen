@@ -1,6 +1,6 @@
-type Attack = f64;
-type Release = f64;
-type Curve = f64;
+pub type Attack = f64;
+pub type Release = f64;
+pub type Curve = f64;
 
 pub enum Envelope {
     AR(Attack, Release, Curve)
@@ -15,7 +15,9 @@ impl Envelope {
                     if *curve >= 0. { x.powf(*curve + 1.) }
                     else { x.powf(-1. / (*curve - 1.)) }
                 } else if clock <= attack + release {
-                    (attack + release) - (clock / release)
+                    let x = (clock - attack)/release;
+                    if *curve >= 0. { 1. - x.powf(*curve + 1.) }
+                    else { 1. - x.powf(-1. / (*curve - 1.)) }
                 } else {
                     0.
                 }

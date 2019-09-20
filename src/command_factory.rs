@@ -45,7 +45,6 @@ mod tests {
     use super::message_to_command;
     use rosc::{OscMessage, OscPacket, OscType};
     use crate::synth::Command;
-    use crate::oscillator::Wave;
     use crate::instrument::Instruments;
 
     #[test]
