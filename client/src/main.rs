@@ -19,9 +19,9 @@ fn main() {
     let step_size: f32 = 2.0 * f32::consts::PI / steps as f32;
     for i in 0.. {
         instrument("kick").play();
-        sleep(500);
+        sleep(400);
         instrument("snare").play();
-        sleep(500);
+        sleep(400);
     }
 }
 

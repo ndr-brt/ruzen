@@ -20,7 +20,7 @@ impl Play for Kick {
         self.clock.tick();
         let signal = Signal::Sine(65., 0.).value_at(self.clock.get()) *
             Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
-        let envelope = Envelope::AR(0.01, 1.).value_at(self.clock.get());
+        let envelope = Envelope::AR(0.01, 1., -4.).value_at(self.clock.get());
         signal * envelope
     }
 }
@@ -38,7 +38,7 @@ impl Play for Snare {
         self.clock.tick();
         let signal = Signal::Pulse(165., 0.).value_at(self.clock.get()) *
             Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
-        let envelope = Envelope::AR(0.05, 1.).value_at(self.clock.get());
+        let envelope = Envelope::AR(0.05, 1., -4.).value_at(self.clock.get());
         signal * envelope
     }
 }
