@@ -2,8 +2,6 @@ use rosc::OscPacket;
 use crate::synth::Command;
 use std::error::Error;
 use rosc::OscType;
-use crate::clock::Hz;
-use crate::instrument::Instruments;
 use crate::instrument::Instruments::{Kick, Snare};
 
 pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn Error>> {
@@ -30,13 +28,6 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
         OscPacket::Bundle(bundle) => {
             Result::Err(Box::from(format!("OSC Bundle: {:?}", bundle)))
         }
-    }
-}
-
-fn to_double(arg: OscType) -> f64 {
-    match arg {
-        OscType::Double(value) => value,
-        _ => 0.
     }
 }
 

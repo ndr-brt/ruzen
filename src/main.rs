@@ -29,8 +29,6 @@ fn main() {
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(cmd_in, sig_out));
 
-    plot();
-
     let osc_server = OscServer::new("127.0.0.1:38042");
     osc_server.listen(cmd_out);
 
@@ -57,7 +55,7 @@ fn plot() {
     }
 
     let mut fg = Figure::new();
-    let axes = fg.axes2d()
+    fg.axes2d()
         .set_title("A plot", &[])
         .set_legend(Graph(0.5), Graph(0.9), &[], &[])
         .set_x_label("x", &[])

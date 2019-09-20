@@ -1,7 +1,6 @@
 use crate::envelope::Envelope;
 use crate::clock::{Clock};
 use crate::signal::Signal;
-use std::any::Any;
 
 #[derive(PartialEq, Debug)]
 pub enum Instruments {

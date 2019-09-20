@@ -11,7 +11,7 @@ impl Envelope {
         match self {
             Self::AR(attack, release, curve) => {
                 if clock <= *attack {
-                    let x = (clock / attack);
+                    let x = clock / attack;
                     if *curve >= 0. { x.powf(*curve + 1.) }
                     else { x.powf(-1. / (*curve - 1.)) }
                 } else if clock <= attack + release {
@@ -41,8 +41,3 @@ mod tests {
     }
 
 }
-
-/*
-if curve >= 0 x^(a+1)
-else x^(-1/(a-1))
-*/
