@@ -31,8 +31,6 @@ fn main() {
 
     let osc_server = OscServer::new("127.0.0.1:38042");
     osc_server.listen(cmd_out);
-
-
 }
 
 // TODO: put plot in a different module

@@ -7,6 +7,7 @@ pub enum Envelope {
 }
 
 impl Envelope {
+
     pub(crate) fn value_at(&self, clock: f64) -> f64 {
         match self {
             Self::AR(attack, release, curve) => {
@@ -22,6 +23,12 @@ impl Envelope {
                     0.
                 }
             }
+        }
+    }
+
+    pub fn duration(&self) -> f64 {
+        match self {
+            Self::AR(attack, release, curve) => attack + release
         }
     }
 }

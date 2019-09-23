@@ -38,11 +38,13 @@ impl State {
     pub fn new(sample_rate: Hz) -> State {
         State {
             sample_rate,
-            instruments: Vec::new() // TODO: free the finished instruments!
+            instruments: Vec::new()
         }
     }
 
     pub fn next_sample(&mut self) -> f64 {
+        self.instruments.retain(|i| !i.is_finished());
+
         self.instruments.iter_mut().map(|w| w.signal()).sum()
     }
 
