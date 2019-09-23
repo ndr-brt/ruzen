@@ -19,7 +19,8 @@ pub struct Kick {
 impl Play for Kick {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let signal = Signal::Sine(65., 0.).value_at(self.clock.get()) *
+        let modulation = Envelope::AR(0.0001, 1.5, -200.).value_at(self.clock.get());
+        let signal = Signal::Sine((modulation * 800. + 45.), 1.).value_at(self.clock.get()) *
             Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
         signal * self.envelope.value_at(self.clock.get())
     }
@@ -29,10 +30,9 @@ impl Play for Kick {
     }
 }
 pub(crate) fn kick(sample_rate: f64) -> Kick {
-    println!("NEW KICK!");
     Kick {
         clock: Clock::new(sample_rate),
-        envelope: Envelope::AR(0.01, 1., -4.)
+        envelope: Envelope::AR(0.0001, 0.09, -4.)
     }
 }
 
@@ -55,6 +55,6 @@ impl Play for Snare {
 pub(crate) fn snare(sample_rate: f64) -> Snare {
     Snare {
         clock: Clock::new(sample_rate),
-        envelope: Envelope::AR(0.05, 1., -4.)
+        envelope: Envelope::AR(0.0005, 0.2, -4.)
     }
 }

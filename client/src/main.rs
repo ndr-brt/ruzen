@@ -15,11 +15,15 @@ const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 
 fn main() {
-    let steps = 128;
-    let step_size: f32 = 2.0 * f32::consts::PI / steps as f32;
-    for i in 0.. {
+    loop {
         instrument("kick").play();
         sleep(400);
+        instrument("snare").play();
+        sleep(400);
+        instrument("kick").play();
+        sleep(100);
+        instrument("kick").play();
+        sleep(300);
         instrument("snare").play();
         sleep(400);
     }
