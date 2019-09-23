@@ -1,7 +1,7 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
 use crate::clock::{Hz};
-use crate::instrument::{snare, kick, Instruments, Play};
+use crate::instrument::{snare, kick, Instruments, Instrument};
 
 pub struct Synth {
     sample_rate: Hz,
@@ -31,7 +31,7 @@ impl Synth {
 
 pub struct State {
     sample_rate: Hz,
-    instruments: Vec<Box<dyn Play>>,
+    instruments: Vec<Box<dyn Instrument>>,
 }
 
 impl State {

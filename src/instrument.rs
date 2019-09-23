@@ -7,7 +7,7 @@ pub enum Instruments {
     Kick, Snare
 }
 
-pub trait Play {
+pub trait Instrument {
     fn signal(&mut self) -> f64;
     fn is_finished(&self) -> bool;
 }
@@ -16,7 +16,7 @@ pub struct Kick {
     envelope: Envelope,
     clock: Clock
 }
-impl Play for Kick {
+impl Instrument for Kick {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
         let modulation = Envelope::AR(0.0001, 1.5, -200.).value_at(self.clock.get());
@@ -40,7 +40,7 @@ pub struct Snare {
     envelope: Envelope,
     clock: Clock
 }
-impl Play for Snare {
+impl Instrument for Snare {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
         let snare =
