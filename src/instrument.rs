@@ -43,9 +43,12 @@ pub struct Snare {
 impl Play for Snare {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let signal = Signal::Pulse(165., 0.).value_at(self.clock.get()) *
-            Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
-        signal * self.envelope.value_at(self.clock.get())
+        let snare =
+            (Signal::Sine(30., 0.).value_at(self.clock.get()) * Envelope::AR(0.0005, 0.055, -4.).value_at(self.clock.get()) * 0.25)
+            + (Signal::Sine(285., 0.).value_at(self.clock.get()) * Envelope::AR(0.0005, 0.075, -4.).value_at(self.clock.get()) * 0.25)
+            + Signal::WhiteNoise().value_at(self.clock.get()) * 0.8;
+
+        snare * self.envelope.value_at(self.clock.get())
     }
 
     fn is_finished(&self) -> bool {
