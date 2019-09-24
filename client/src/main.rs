@@ -17,7 +17,7 @@ const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 fn main() {
     let cycle = 1000;
     loop {
-        pattern("kick kick snare ~ kick kick snare ~ snare", 1000);
+        pattern("kick kick snare ~ kick kick snare ~ snare", rrand(400., 1900.) as usize);
     }
 }
 
