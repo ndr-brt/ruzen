@@ -17,7 +17,7 @@ const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 fn main() {
     let cycle = 1000;
     loop {
-        pattern("kick kick snare kick kick kick snare snare snare", 1000);
+        pattern("kick kick snare ~ kick kick snare ~ snare", 1000);
     }
 }
 
@@ -25,7 +25,9 @@ fn pattern(pattern: &str, cycle_time: usize) {
     let tokens: Vec<&str> = pattern.split(" ").collect();
     let time_each: usize = cycle_time / tokens.len();
     tokens.iter().for_each(|token| {
-        instrument(token).play();
+        if *token != "~" {
+            instrument(token).play();
+        }
         sleep(time_each as u64);
     })
 }
