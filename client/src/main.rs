@@ -2,10 +2,10 @@ extern crate rosc;
 extern crate rand;
 
 use rosc::encoder;
-use rosc::{OscMessage, OscPacket, OscType};
+use rosc::{OscMessage, OscPacket};
 use std::net::{UdpSocket};
 use std::time::Duration;
-use std::{f32};
+use std::{f32, thread};
 use rand::thread_rng;
 use crate::rand::Rng;
 
@@ -15,10 +15,12 @@ const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 
 fn main() {
-    let cycle = 1000;
-    loop {
-        pattern("kick kick snare ~ kick kick snare ~ snare", rrand(400., 1900.) as usize);
-    }
+    let pattern_duration = 1;
+
+    thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration *1000) });
+    thread::spawn(move || loop { pattern("~ snare ~ snare", pattern_duration *1000) });
+
+    loop {}
 }
 
 fn pattern(pattern: &str, cycle_time: usize) {
@@ -52,7 +54,7 @@ impl Instrument<'_> {
     }
 
     pub fn play(&self) {
-        let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
             addr: format!("/instrument/{}", self.name),
             args: Some(vec![]),
         })).unwrap();
@@ -74,5 +76,13 @@ fn instrument(name: &str) -> Instrument {
 }
 
 fn send_osc_message(msg_buf: Vec<u8>) {
-    UdpSocket::bind(HOST_ADDRESS).unwrap().send_to(&msg_buf, SERVER_ADDRESS);
+    match UdpSocket::bind(HOST_ADDRESS) {
+        Ok(x) => {
+            match x.send_to(&msg_buf, SERVER_ADDRESS) {
+                Ok(_) => (),
+                Err(err) => println!("Error in sending message to server {}", err)
+            }
+        },
+        Err(_) => unimplemented!(),
+    };
 }
