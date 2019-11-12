@@ -1,6 +1,4 @@
-use crate::envelope::Envelope;
 use crate::clock::{Clock};
-use crate::signal::{Signal};
 use crate::ugen::{UGen};
 
 #[derive(PartialEq, Debug)]
@@ -20,11 +18,11 @@ pub struct Kick {
 impl Instrument for Kick {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let modulation = (
-            UGen::ar(0.0001, 1.5, -200.) * UGen::from(800.) + UGen::from(45.)
-        ).value_at(self.clock.get());
 
-        let signal = UGen::sine(modulation, 1.) * UGen::line(1., 0., 1.);
+        let modulation = UGen::ar(0.0001, 1.5, -200.) * UGen::from(800.) + UGen::from(45.);
+
+        let signal = UGen::sine(modulation.value_at(self.clock.get()), 1.)
+            * UGen::line(1., 0., 1.);
 
         signal.value_at(self.clock.get()) * self.envelope.value_at(self.clock.get())
     }

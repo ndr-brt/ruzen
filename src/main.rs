@@ -10,14 +10,12 @@ use crate::synth::{Synth, Command };
 use crate::osc_server::OscServer;
 
 mod clock;
-mod envelope;
 mod out;
 mod plot;
 mod osc_server;
 mod command_factory;
 mod instrument;
 mod synth;
-mod signal;
 mod ugen;
 
 fn main() {
@@ -39,10 +37,10 @@ fn main() {
 use gnuplot::{Figure, AxesCommon};
 use gnuplot::Coordinate::Graph;
 use gnuplot::PlotOption::Caption;
-use crate::envelope::Envelope;
+use crate::ugen::UGen;
 
 fn plot() {
-    let envelope = Envelope::AR(0.05, 0.5, -4.);
+    let envelope = UGen::ar(0.05, 0.5, -4.);
 
     const SAMPLE_RATE: usize = 1000;
 

@@ -1,7 +1,6 @@
 use rosc::OscPacket;
 use crate::synth::Command;
 use std::error::Error;
-use rosc::OscType;
 use crate::instrument::Instruments::{Kick, Snare};
 
 pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn Error>> {

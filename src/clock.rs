@@ -13,7 +13,7 @@ impl Clock {
     }
 
     pub fn tick(&mut self) -> f64 {
-        self.clock += 1.0;
+        self.clock += 1.;
         self.get()
     }
 

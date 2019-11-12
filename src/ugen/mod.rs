@@ -9,6 +9,12 @@ pub struct UGen {
     value_at: Box<ValueAt>,
 }
 
+/*
+TODO: implement waves
+Self::Saw(frequency, phase) => (((clock + phase) * frequency) % 1.),
+Self::Pulse(frequency, phase) => if ((clock + phase) * frequency) % 1. < 0.5 {1.} else {-1.},
+*/
+
 impl UGen {
     pub(crate) fn sine(frequency: f64, phase: f64) -> Self {
         UGen {
@@ -19,7 +25,7 @@ impl UGen {
 
     pub(crate) fn ar(attack: f64, release: f64, curve: f64) -> Self {
         UGen {
-            duration: attack + release + curve,
+            duration: attack + release,
             value_at: Box::new(move |clock: f64| {
                 if clock <= attack {
                     let x = clock / attack;
@@ -37,7 +43,7 @@ impl UGen {
     pub(crate) fn white_noise() -> Self {
         UGen {
             duration: 0.,
-            value_at: Box::new(move |clock: f64| rand::thread_rng().gen_range(-1., 1.))
+            value_at: Box::new(move |_clock: f64| rand::thread_rng().gen_range(-1., 1.))
         }
     }
 
@@ -49,7 +55,7 @@ impl UGen {
     }
 
     pub(crate) fn value_at(&self, clock: f64) -> f64 {
-        self.value_at(clock)
+        (self.value_at)(clock)
     }
 
     pub(crate) fn duration(&self) -> f64 {
@@ -82,8 +88,28 @@ impl Mul for UGen {
 
     fn mul(self, rhs: Self) -> Self::Output {
         UGen {
-            duration: self.duration.min(rhs.duration),
+            duration: self.duration.max(rhs.duration),
             value_at: Box::new(move |clock| self.value_at(clock) * rhs.value_at(clock))
         }
     }
 }
+
+/*
+TODO: envelope test
+#[cfg(test)]
+mod tests {
+    use super::Envelope;
+
+    #[test]
+    fn ar_envelope() {
+        let envelope = Envelope::AR(1.0, 1.0, 0.);
+        assert_eq!(0.0, envelope.value_at(0.0));
+        assert_eq!(0.5, envelope.value_at(0.5));
+        assert_eq!(1.0, envelope.value_at(1.0));
+        assert_eq!(0.5, envelope.value_at(1.5));
+        assert_eq!(0.0, envelope.value_at(2.0));
+    }
+
+}
+
+*/

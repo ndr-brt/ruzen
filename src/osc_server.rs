@@ -26,7 +26,7 @@ impl OscServer {
 
         loop {
             match sock.recv_from(&mut buf) {
-                Ok((size, address)) => {
+                Ok((size, _address)) => {
                     let packet = rosc::decoder::decode(&buf[..size]).unwrap();
                     match message_to_command(packet) {
                         Ok(command) => { command_out.send(command); } ,
