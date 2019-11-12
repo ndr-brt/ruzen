@@ -2,6 +2,8 @@ use std::ops::{Add, Mul};
 use std::f64::consts::PI;
 use crate::rand::Rng;
 
+pub mod envelope;
+
 type ValueAt = dyn Fn(f64) -> f64;
 
 pub struct UGen {
@@ -24,20 +26,7 @@ impl UGen {
     }
 
     pub(crate) fn ar(attack: f64, release: f64, curve: f64) -> Self {
-        UGen {
-            duration: attack + release,
-            value_at: Box::new(move |clock: f64| {
-                if clock <= attack {
-                    let x = clock / attack;
-                    if curve >= 0. { x.powf(curve + 1.) } else { x.powf(-1. / (curve - 1.)) }
-                } else if clock <= attack + release {
-                    let x = (clock - attack) / release;
-                    if curve >= 0. { 1. - x.powf(curve + 1.) } else { 1. - x.powf(-1. / (curve - 1.)) }
-                } else {
-                    0.
-                }
-            })
-        }
+        envelope::ar(attack, release, curve)
     }
 
     pub(crate) fn white_noise() -> Self {
@@ -93,23 +82,3 @@ impl Mul for UGen {
         }
     }
 }
-
-/*
-TODO: envelope test
-#[cfg(test)]
-mod tests {
-    use super::Envelope;
-
-    #[test]
-    fn ar_envelope() {
-        let envelope = Envelope::AR(1.0, 1.0, 0.);
-        assert_eq!(0.0, envelope.value_at(0.0));
-        assert_eq!(0.5, envelope.value_at(0.5));
-        assert_eq!(1.0, envelope.value_at(1.0));
-        assert_eq!(0.5, envelope.value_at(1.5));
-        assert_eq!(0.0, envelope.value_at(2.0));
-    }
-
-}
-
-*/
