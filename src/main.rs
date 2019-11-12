@@ -18,6 +18,7 @@ mod command_factory;
 mod instrument;
 mod synth;
 mod signal;
+mod ugen;
 
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));

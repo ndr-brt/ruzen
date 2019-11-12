@@ -64,10 +64,11 @@ impl Out {
 fn feed_buffer<T: SampleFromF64>(mut buffer: OutputBuffer<'_, T>, sig_in: &Receiver<f64>, channels: usize) {
     for buff_chunks in buffer.chunks_mut(channels) {
         match sig_in.recv() {
-            Ok(sample) =>
+            Ok(sample) => {
                 for out in buff_chunks.iter_mut() {
                     *out = T::from_f64(sample * 0.5);
-                },
+                }
+            },
             _ => {
                 panic!("Sample channel hang up?");
             }

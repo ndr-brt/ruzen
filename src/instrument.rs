@@ -1,10 +1,11 @@
 use crate::envelope::Envelope;
 use crate::clock::{Clock};
-use crate::signal::Signal;
+use crate::signal::{Signal};
+use crate::ugen::{UGen};
 
 #[derive(PartialEq, Debug)]
 pub enum Instruments {
-    Kick, Snare
+    Kick, Snare,
 }
 
 pub trait Instrument {
@@ -13,16 +14,19 @@ pub trait Instrument {
 }
 
 pub struct Kick {
-    envelope: Envelope,
+    envelope: UGen,
     clock: Clock
 }
 impl Instrument for Kick {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let modulation = Envelope::AR(0.0001, 1.5, -200.).value_at(self.clock.get());
-        let signal = Signal::Sine((modulation * 800. + 45.), 1.).value_at(self.clock.get()) *
-            Signal::Line(1.0, 0., 1.).value_at(self.clock.get());
-        signal * self.envelope.value_at(self.clock.get())
+        let modulation = (
+            UGen::ar(0.0001, 1.5, -200.) * UGen::from(800.) + UGen::from(45.)
+        ).value_at(self.clock.get());
+
+        let signal = UGen::sine(modulation, 1.) * UGen::line(1., 0., 1.);
+
+        signal.value_at(self.clock.get()) * self.envelope.value_at(self.clock.get())
     }
 
     fn is_finished(&self) -> bool {
@@ -32,23 +36,24 @@ impl Instrument for Kick {
 pub(crate) fn kick(sample_rate: f64) -> Kick {
     Kick {
         clock: Clock::new(sample_rate),
-        envelope: Envelope::AR(0.0001, 0.09, -4.)
+        envelope: UGen::ar(0.0001, 0.09, -4.)
     }
 }
 
 pub struct Snare {
-    envelope: Envelope,
+    envelope: UGen,
     clock: Clock
 }
 impl Instrument for Snare {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
-        let snare =
-            (Signal::Sine(30., 0.).value_at(self.clock.get()) * Envelope::AR(0.0005, 0.055, -4.).value_at(self.clock.get()) * 0.25)
-            + (Signal::Sine(285., 0.).value_at(self.clock.get()) * Envelope::AR(0.0005, 0.075, -4.).value_at(self.clock.get()) * 0.25)
-            + Signal::WhiteNoise().value_at(self.clock.get()) * 0.8;
 
-        snare * self.envelope.value_at(self.clock.get())
+        let snare =
+            (UGen::sine(30., 0.) * UGen::ar(0.0005, 0.055, -4.) * UGen::from(0.25))
+            + (UGen::sine(285., 0.) * UGen::ar(0.0005, 0.075, -4.) * UGen::from(0.25))
+            + UGen::white_noise() * UGen::from(0.8);
+
+        snare.value_at(self.clock.get()) * self.envelope.value_at(self.clock.get())
     }
 
     fn is_finished(&self) -> bool {
@@ -58,6 +63,6 @@ impl Instrument for Snare {
 pub(crate) fn snare(sample_rate: f64) -> Snare {
     Snare {
         clock: Clock::new(sample_rate),
-        envelope: Envelope::AR(0.0005, 0.2, -4.)
+        envelope: UGen::ar(0.0005, 0.2, -4.)
     }
 }
