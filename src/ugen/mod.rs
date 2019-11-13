@@ -1,12 +1,21 @@
 use std::ops::{Add, Mul};
 use std::f64::consts::PI;
 use crate::rand::Rng;
+use std::collections::HashMap;
 
 pub mod envelope;
 
 type ValueAt = dyn Fn(f64) -> f64;
 
+#[derive(Hash, PartialEq, Eq)]
+enum UGenParameters {
+    Function,
+    Phase,
+}
+
+// TODO: add parameters
 pub struct UGen {
+    parameters: HashMap<UGenParameters, f64>,
     duration: f64,
     value_at: Box<ValueAt>,
 }
@@ -20,6 +29,7 @@ Self::Pulse(frequency, phase) => if ((clock + phase) * frequency) % 1. < 0.5 {1.
 impl UGen {
     pub(crate) fn sine(frequency: f64, phase: f64) -> Self {
         UGen {
+            parameters: HashMap::new(),
             duration: 0.,
             value_at: Box::new(move |clock: f64| ((clock + phase) * frequency * 2.0 * PI).sin()),
         }
@@ -31,6 +41,7 @@ impl UGen {
 
     pub(crate) fn white_noise() -> Self {
         UGen {
+            parameters: HashMap::new(),
             duration: 0.,
             value_at: Box::new(move |_clock: f64| rand::thread_rng().gen_range(-1., 1.))
         }
@@ -38,6 +49,7 @@ impl UGen {
 
     pub(crate) fn line(start: f64, end: f64, duration: f64) -> Self {
         UGen {
+            parameters: HashMap::new(),
             duration,
             value_at: Box::new(move |clock: f64| (start + (clock * (end - start)/duration)))
         }
@@ -55,6 +67,7 @@ impl UGen {
 impl From<f64> for UGen {
     fn from(value: f64) -> Self {
         UGen {
+            parameters: HashMap::new(),
             duration: 0.,
             value_at: Box::new(move |_clock: f64| value)
         }
@@ -66,6 +79,7 @@ impl Add for UGen {
 
     fn add(self, rhs: Self) -> Self::Output {
         UGen {
+            parameters: HashMap::new(),
             duration: self.duration.max(rhs.duration),
             value_at: Box::new(move |clock| self.value_at(clock) + rhs.value_at(clock))
         }
@@ -77,6 +91,7 @@ impl Mul for UGen {
 
     fn mul(self, rhs: Self) -> Self::Output {
         UGen {
+            parameters: HashMap::new(),
             duration: self.duration.max(rhs.duration),
             value_at: Box::new(move |clock| self.value_at(clock) * rhs.value_at(clock))
         }

@@ -20,7 +20,7 @@ impl Instrument for Kick {
         self.clock.tick();
 
         let modulation = envelope::ar(0.0001, 1.5, -200.) * UGen::from(800.) + UGen::from(45.);
-
+        // TODO: make sine accept UGen, for modulation (need a function to scale value maybe)
         let signal = UGen::sine(modulation.value_at(self.clock.get()), 1.)
             * UGen::line(1., 0., 1.);
 

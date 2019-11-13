@@ -66,7 +66,7 @@ fn feed_buffer<T: SampleFromF64>(mut buffer: OutputBuffer<'_, T>, sig_in: &Recei
         match sig_in.recv() {
             Ok(sample) => {
                 for out in buff_chunks.iter_mut() {
-                    *out = T::from_f64(sample * 0.5);
+                    *out = T::from_f64(sample);
                 }
             },
             _ => {

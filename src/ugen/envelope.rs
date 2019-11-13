@@ -1,7 +1,9 @@
 use crate::ugen::UGen;
+use std::collections::HashMap;
 
 pub fn ar(attack: f64, release: f64, curve: f64) -> UGen {
     UGen {
+        parameters: HashMap::new(),
         duration: attack + release,
         value_at: Box::new(move |clock: f64| {
             if clock <= attack {
