@@ -8,10 +8,6 @@ pub trait ValueAt {
     fn value_at(&self, clock: f64) -> f64;
 }
 
-pub trait Duration {
-    fn duration(&self) -> f64;
-}
-
 pub struct UGen<T> where T: ValueAt {
     parameters: T,
 }

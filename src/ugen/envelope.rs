@@ -1,4 +1,4 @@
-use crate::ugen::{UGen, ValueAt, Duration};
+use crate::ugen::{UGen, ValueAt };
 
 pub struct AR {
     attack: f64,
@@ -6,7 +6,19 @@ pub struct AR {
     curve: f64,
 }
 
-impl Duration for UGen<AR> {
+pub trait Envelope: ValueAt {
+    fn duration(&self) -> f64;
+}
+
+impl dyn Envelope {
+    pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
+        UGen {
+            parameters: AR { attack, release, curve }
+        }
+    }
+}
+
+impl Envelope for UGen<AR> {
     fn duration(&self) -> f64 {
         self.parameters.attack + self.parameters.release
     }
@@ -26,19 +38,13 @@ impl ValueAt for AR {
     }
 }
 
-pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
-    UGen {
-        parameters: AR { attack, release, curve },
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::ugen::{envelope, ValueAt};
 
     #[test]
     fn ar_envelope() {
-        let envelope = envelope::ar(1.0, 1.0, 0.);
+        let envelope = Envelope::ar(1.0, 1.0, 0.);
         assert_eq!(0.0, envelope.value_at(0.0));
         assert_eq!(0.5, envelope.value_at(0.5));
         assert_eq!(1.0, envelope.value_at(1.0));
