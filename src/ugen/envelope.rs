@@ -15,7 +15,6 @@ impl Duration for UGen<AR> {
 
 pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
     UGen {
-        duraaaa: attack + release,
         parameters: AR { attack, release, curve },
         value: Box::new(move |clock: f64| {
             if clock <= attack {
