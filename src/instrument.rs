@@ -1,6 +1,7 @@
 use crate::clock::{Clock};
 use crate::ugen::{UGen, ValueAt};
 use crate::ugen::envelope::Envelope;
+use crate::ugen::generator::{Sine, WhiteNoise};
 
 #[derive(PartialEq, Debug)]
 pub enum Instruments {
@@ -22,8 +23,8 @@ impl Instrument for Kick {
 
         let modulation = Envelope::ar(0.0001, 1.5, -200.) * UGen::from(800.) + UGen::from(45.);
         // TODO: make sine accept UGen, for modulation (need a function to scale value maybe)
-        let signal = UGen::sine(modulation.value_at(self.clock.get()), 1.)
-            * UGen::line(1., 0., 1.);
+        let signal = Sine::new(modulation.value_at(self.clock.get()), 1.)
+            * Envelope::line(1., 0., 1.);
 
         signal.value_at(self.clock.get()) * self.envelope.value_at(self.clock.get())
     }
@@ -47,10 +48,11 @@ impl Instrument for Snare {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
 
+        // TODO: implement range, could help for constants
         let snare =
-            (UGen::sine(30., 0.) * Envelope::ar(0.0005, 0.055, -4.) * UGen::from(0.25))
-            + (UGen::sine(285., 0.) * Envelope::ar(0.0005, 0.075, -4.) * UGen::from(0.25))
-            + UGen::white_noise() * UGen::from(0.8);
+            (Sine::new(30., 0.) * Envelope::ar(0.0005, 0.055, -4.) * UGen::from(0.25))
+            + (Sine::new(285., 0.) * Envelope::ar(0.0005, 0.075, -4.) * UGen::from(0.25))
+            + WhiteNoise::new() * UGen::from(0.8);
 
         snare.value_at(self.clock.get()) * self.envelope.value_at(self.clock.get())
     }

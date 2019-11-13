@@ -1,21 +1,23 @@
 use crate::ugen::{UGen, ValueAt };
 
-pub struct AR {
-    attack: f64,
-    release: f64,
-    curve: f64,
-}
-
 pub trait Envelope: ValueAt {
     fn duration(&self) -> f64;
 }
 
 impl dyn Envelope {
     pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
-        UGen {
-            parameters: AR { attack, release, curve }
-        }
+        UGen { parameters: AR { attack, release, curve } }
     }
+
+    pub fn line(start: f64, end: f64, duration: f64) -> UGen<Line> {
+        UGen { parameters: Line { start, end, duration }}
+    }
+}
+
+pub struct AR {
+    attack: f64,
+    release: f64,
+    curve: f64,
 }
 
 impl Envelope for UGen<AR> {
@@ -37,6 +39,25 @@ impl ValueAt for AR {
         }
     }
 }
+
+pub struct Line {
+    start: f64,
+    end: f64,
+    duration: f64
+}
+
+impl Envelope for UGen<Line> {
+    fn duration(&self) -> f64 {
+        self.parameters.duration
+    }
+}
+
+impl ValueAt for Line {
+    fn value_at(&self, clock: f64) -> f64 {
+        (self.start + (clock * (self.end - self.start) / self.duration))
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
