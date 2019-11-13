@@ -1,5 +1,4 @@
 use crate::ugen::{UGen, ValueAt, Duration};
-use std::collections::HashMap;
 
 pub struct AR {
     attack: f64,
@@ -13,20 +12,23 @@ impl Duration for UGen<AR> {
     }
 }
 
+impl ValueAt for AR {
+    fn value_at(&self, clock: f64) -> f64 {
+        if clock <= self.attack {
+            let x = clock / self.attack;
+            if self.curve >= 0. { x.powf(self.curve + 1.) } else { x.powf(-1. / (self.curve - 1.)) }
+        } else if clock <= self.attack + self.release {
+            let x = (clock - self.attack) / self.release;
+            if self.curve >= 0. { 1. - x.powf(self.curve + 1.) } else { 1. - x.powf(-1. / (self.curve - 1.)) }
+        } else {
+            0.
+        }
+    }
+}
+
 pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
     UGen {
         parameters: AR { attack, release, curve },
-        value: Box::new(move |clock: f64| {
-            if clock <= attack {
-                let x = clock / attack;
-                if curve >= 0. { x.powf(curve + 1.) } else { x.powf(-1. / (curve - 1.)) }
-            } else if clock <= attack + release {
-                let x = (clock - attack) / release;
-                if curve >= 0. { 1. - x.powf(curve + 1.) } else { 1. - x.powf(-1. / (curve - 1.)) }
-            } else {
-                0.
-            }
-        })
     }
 }
 
