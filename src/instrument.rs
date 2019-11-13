@@ -1,5 +1,6 @@
 use crate::clock::{Clock};
-use crate::ugen::{UGen, envelope};
+use crate::ugen::{UGen, envelope, ValueAt, Duration};
+use crate::ugen::envelope::AR;
 
 #[derive(PartialEq, Debug)]
 pub enum Instruments {
@@ -12,7 +13,7 @@ pub trait Instrument {
 }
 
 pub struct Kick {
-    envelope: UGen,
+    envelope: UGen<AR>,
     clock: Clock
 }
 impl Instrument for Kick {
@@ -39,7 +40,7 @@ pub(crate) fn kick(sample_rate: f64) -> Kick {
 }
 
 pub struct Snare {
-    envelope: UGen,
+    envelope: UGen<AR>,
     clock: Clock
 }
 impl Instrument for Snare {

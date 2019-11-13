@@ -37,10 +37,10 @@ fn main() {
 use gnuplot::{Figure, AxesCommon};
 use gnuplot::Coordinate::Graph;
 use gnuplot::PlotOption::Caption;
-use crate::ugen::UGen;
+use crate::ugen::{UGen, ValueAt, envelope};
 
 fn plot() {
-    let envelope = UGen::ar(0.05, 0.5, -4.);
+    let envelope = envelope::ar(0.05, 0.5, -4.);
 
     const SAMPLE_RATE: usize = 1000;
 

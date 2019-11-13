@@ -1,11 +1,23 @@
-use crate::ugen::UGen;
+use crate::ugen::{UGen, ValueAt, Duration};
 use std::collections::HashMap;
 
-pub fn ar(attack: f64, release: f64, curve: f64) -> UGen {
+pub struct AR {
+    attack: f64,
+    release: f64,
+    curve: f64,
+}
+
+impl Duration for UGen<AR> {
+    fn duration(&self) -> f64 {
+        self.parameters.attack + self.parameters.release
+    }
+}
+
+pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
     UGen {
-        parameters: HashMap::new(),
-        duration: attack + release,
-        value_at: Box::new(move |clock: f64| {
+        duraaaa: attack + release,
+        parameters: AR { attack, release, curve },
+        value: Box::new(move |clock: f64| {
             if clock <= attack {
                 let x = clock / attack;
                 if curve >= 0. { x.powf(curve + 1.) } else { x.powf(-1. / (curve - 1.)) }
@@ -21,7 +33,7 @@ pub fn ar(attack: f64, release: f64, curve: f64) -> UGen {
 
 #[cfg(test)]
 mod tests {
-    use crate::ugen::envelope;
+    use crate::ugen::{envelope, ValueAt};
 
     #[test]
     fn ar_envelope() {

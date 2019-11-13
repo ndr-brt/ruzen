@@ -5,19 +5,40 @@ use std::collections::HashMap;
 
 pub mod envelope;
 
-type ValueAt = dyn Fn(f64) -> f64;
+pub trait ValueAt {
+    fn value_at(&self, clock: f64) -> f64;
+}
 
-#[derive(Hash, PartialEq, Eq)]
-enum UGenParameters {
-    Function,
-    Phase,
+pub trait Duration {
+    fn duration(&self) -> f64;
 }
 
 // TODO: add parameters
-pub struct UGen {
-    parameters: HashMap<UGenParameters, f64>,
-    duration: f64,
-    value_at: Box<ValueAt>,
+pub struct UGen<T> {
+    duraaaa: f64,
+    parameters: T,
+    value: Box<dyn Fn(f64) -> f64>,
+}
+
+impl<T> ValueAt for UGen<T> {
+    fn value_at(&self, clock: f64) -> f64 {
+        (self.value)(clock)
+    }
+}
+
+pub struct Sine {
+    frequency: f64,
+    phase: f64,
+}
+
+impl ValueAt for Sine {
+    fn value_at(&self, clock: f64) -> f64 {
+        ((clock + self.phase) * self.frequency * 2.0 * PI).sin()
+    }
+}
+
+pub struct Combined {
+
 }
 
 /*
@@ -26,74 +47,66 @@ Self::Saw(frequency, phase) => (((clock + phase) * frequency) % 1.),
 Self::Pulse(frequency, phase) => if ((clock + phase) * frequency) % 1. < 0.5 {1.} else {-1.},
 */
 
-impl UGen {
-    pub(crate) fn sine(frequency: f64, phase: f64) -> Self {
+impl UGen<Sine> {
+    pub(crate) fn sine(frequency: f64, phase: f64) -> UGen<Sine> {
         UGen {
-            parameters: HashMap::new(),
-            duration: 0.,
-            value_at: Box::new(move |clock: f64| ((clock + phase) * frequency * 2.0 * PI).sin()),
+            parameters: Sine { frequency, phase },
+            duraaaa: 0.,
+            value: Box::new(move |clock: f64| ((clock + phase) * frequency * 2.0 * PI).sin()),
         }
-    }
-
-    pub(crate) fn ar(attack: f64, release: f64, curve: f64) -> Self {
-        envelope::ar(attack, release, curve)
     }
 
     pub(crate) fn white_noise() -> Self {
         UGen {
-            parameters: HashMap::new(),
-            duration: 0.,
-            value_at: Box::new(move |_clock: f64| rand::thread_rng().gen_range(-1., 1.))
+            parameters: Sine { frequency: 0., phase: 0. },
+            duraaaa: 0.,
+            value: Box::new(move |_clock: f64| rand::thread_rng().gen_range(-1., 1.))
         }
     }
 
     pub(crate) fn line(start: f64, end: f64, duration: f64) -> Self {
         UGen {
-            parameters: HashMap::new(),
-            duration,
-            value_at: Box::new(move |clock: f64| (start + (clock * (end - start)/duration)))
+            parameters: Sine { frequency: 0., phase: 0. },
+            duraaaa: duration,
+            value: Box::new(move |clock: f64| (start + (clock * (end - start)/duration)))
         }
-    }
-
-    pub(crate) fn value_at(&self, clock: f64) -> f64 {
-        (self.value_at)(clock)
     }
 
     pub(crate) fn duration(&self) -> f64 {
-        self.duration
+        self.duraaaa
     }
 }
 
-impl From<f64> for UGen {
+impl From<f64> for UGen<Combined> {
     fn from(value: f64) -> Self {
         UGen {
-            parameters: HashMap::new(),
-            duration: 0.,
-            value_at: Box::new(move |_clock: f64| value)
+            parameters: Combined {},
+            duraaaa: 0.,
+            value: Box::new(move |_clock: f64| value)
         }
     }
 }
 
-impl Add for UGen {
-    type Output = UGen;
+impl<T: 'static, O: 'static> Add<UGen<O>> for UGen<T> {
+    type Output = UGen<Combined>;
 
-    fn add(self, rhs: Self) -> Self::Output {
+    fn add(self, other: UGen<O>) -> Self::Output {
         UGen {
-            parameters: HashMap::new(),
-            duration: self.duration.max(rhs.duration),
-            value_at: Box::new(move |clock| self.value_at(clock) + rhs.value_at(clock))
+            parameters: Combined { },
+            duraaaa: self.duraaaa.max(other.duraaaa),
+            value: Box::new(move |clock| self.value_at(clock) + other.value_at(clock))
         }
     }
 }
 
-impl Mul for UGen {
-    type Output = UGen;
+impl<T: 'static, O: 'static> Mul<UGen<O>> for UGen<T> {
+    type Output = UGen<Combined>;
 
-    fn mul(self, rhs: Self) -> Self::Output {
+    fn mul(self, other: UGen<O>) -> Self::Output {
         UGen {
-            parameters: HashMap::new(),
-            duration: self.duration.max(rhs.duration),
-            value_at: Box::new(move |clock| self.value_at(clock) * rhs.value_at(clock))
+            parameters: Combined {  },
+            duraaaa: self.duraaaa.max(other.duraaaa),
+            value: Box::new(move |clock| self.value_at(clock) * other.value_at(clock))
         }
     }
 }
