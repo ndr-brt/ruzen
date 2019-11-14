@@ -39,3 +39,24 @@ impl ValueAt for WhiteNoise {
         rand::thread_rng().gen_range(-1., 1.)
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::ugen::{ValueAt, Range};
+    use crate::ugen::generator::Sine;
+    use std::f64::consts::PI;
+    use assert_approx_eq::assert_approx_eq;
+
+    #[test]
+    fn sine() {
+        let sine = Sine::new(1., 0.);
+
+        assert_approx_eq!(sine.value_at(0.), 0.);
+        assert_approx_eq!(sine.value_at(0.25), 1.);
+        assert_approx_eq!(sine.value_at(0.5), 0.);
+        assert_approx_eq!(sine.value_at(0.75), -1.);
+        assert_approx_eq!(sine.value_at(1.), 0.);
+    }
+
+}

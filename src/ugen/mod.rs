@@ -11,6 +11,12 @@ pub struct UGen<T> where T: ValueAt {
     parameters: T,
 }
 
+pub trait Range<T> where T: ValueAt {
+    type Output;
+
+    fn range(self, low: f64, high: f64) -> Self::Output;
+}
+
 impl<T> ValueAt for UGen<T> where T: ValueAt {
     fn value_at(&self, clock: f64) -> f64 {
         self.parameters.value_at(clock)
@@ -75,4 +81,69 @@ impl From<f64> for UGen<Constant<f64>> {
             parameters: Constant { value },
         }
     }
+}
+
+pub struct Ranged<T> where T: ValueAt {
+    signal: UGen<T>,
+    low: f64,
+    high: f64,
+}
+
+impl<T: 'static> Range<UGen<T>> for UGen<T> where T: ValueAt {
+    type Output = UGen<Ranged<T>>;
+
+    fn range(self, from: f64, to: f64) -> Self::Output {
+        UGen {
+            parameters: Ranged { signal: self, low: from, high: to }
+        }
+    }
+}
+
+impl<T> ValueAt for Ranged<T> where T: ValueAt {
+    fn value_at(&self, clock: f64) -> f64 {
+        let source_central_point = (1. + (-1.))/2.;
+        let dest_central_point = (self.low + self.high)/2.;
+        let add = dest_central_point - source_central_point;
+
+        let source_amp = (1. - (- 1.));
+        let dest_amp = (self.high - self.low);
+        let mul = dest_amp / source_amp;
+
+        (self.signal.value_at(clock) * mul) + add
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::ugen::{ValueAt, Range};
+    use crate::ugen::generator::Sine;
+    use crate::ugen::envelope::Envelope;
+    use std::f64::consts::PI;
+    use assert_approx_eq::assert_approx_eq;
+
+    #[test]
+    fn range_on_a_generator() {
+        let sine = Sine::new(1., 0.);
+
+        let range = sine.range(0., 10.);
+
+        assert_approx_eq!(range.value_at(0.), 5.);
+        assert_approx_eq!(range.value_at(0.25), 10.);
+        assert_approx_eq!(range.value_at(0.5), 5.);
+        assert_approx_eq!(range.value_at(0.75), 0.);
+        assert_approx_eq!(range.value_at(1.), 5.);
+    }
+
+/*    #[test]
+    fn range_on_an_envelope() {
+        let envelope = Envelope::ar(1., 1., 0.);
+
+        let range = envelope.range(-5., 5.);
+
+        assert_approx_eq!(range.value_at(0.), -5.);
+        assert_approx_eq!(range.value_at(1.), 5.);
+        assert_approx_eq!(range.value_at(2.), -5.);
+    }*/
+
 }
