@@ -1,12 +1,13 @@
 use crate::rand::Rng;
 use std::f64::consts::PI;
-use crate::ugen::{ValueAt, UGen};
+use crate::ugen::{ValueAt, UGen, Range};
 
 /*
 TODO: implement waves
 Self::Saw(frequency, phase) => (((clock + phase) * frequency) % 1.),
 Self::Pulse(frequency, phase) => if ((clock + phase) * frequency) % 1. < 0.5 {1.} else {-1.},
 */
+const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
 pub struct Sine {
     frequency: f64,
@@ -15,7 +16,10 @@ pub struct Sine {
 
 impl Sine {
     pub(crate) fn new(frequency: f64, phase: f64) -> UGen<Self> {
-        UGen { parameters: Sine { frequency, phase } }
+        UGen {
+            parameters: Sine { frequency, phase },
+            range: GENERATOR_RANGE,
+        }
     }
 }
 
@@ -29,7 +33,10 @@ pub struct WhiteNoise { }
 
 impl WhiteNoise {
     pub(crate) fn new() -> UGen<Self> {
-        UGen { parameters: WhiteNoise { } }
+        UGen {
+            parameters: WhiteNoise { },
+            range: GENERATOR_RANGE,
+        }
     }
 }
 
@@ -43,7 +50,7 @@ impl ValueAt for WhiteNoise {
 
 #[cfg(test)]
 mod tests {
-    use crate::ugen::{ValueAt, Range};
+    use crate::ugen::{ValueAt, SignalRange};
     use crate::ugen::generator::Sine;
     use std::f64::consts::PI;
     use assert_approx_eq::assert_approx_eq;

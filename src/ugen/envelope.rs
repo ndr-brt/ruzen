@@ -1,4 +1,4 @@
-use crate::ugen::{UGen, ValueAt };
+use crate::ugen::{UGen, ValueAt, Range};
 
 pub trait Envelope: ValueAt {
     fn duration(&self) -> f64;
@@ -6,11 +6,17 @@ pub trait Envelope: ValueAt {
 
 impl dyn Envelope {
     pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
-        UGen { parameters: AR { attack, release, curve } }
+        UGen {
+            parameters: AR { attack, release, curve },
+            range: Range { low: 0., high: 1. }
+        }
     }
 
     pub fn line(start: f64, end: f64, duration: f64) -> UGen<Line> {
-        UGen { parameters: Line { start, end, duration }}
+        UGen {
+            parameters: Line { start, end, duration },
+            range: Range { low: start, high: end }
+        }
     }
 }
 

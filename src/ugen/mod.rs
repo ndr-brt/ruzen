@@ -9,9 +9,25 @@ pub trait ValueAt {
 
 pub struct UGen<T> where T: ValueAt {
     parameters: T,
+    range: Range,
 }
 
-pub trait Range<T> where T: ValueAt {
+pub struct Range {
+    low: f64,
+    high: f64,
+}
+
+impl Range {
+    fn pp_amplitude(&self) -> f64 {
+        self.high - self.low
+    }
+
+    fn is_bipolar(&self) -> bool {
+        (self.low < 0. && self.high >= 0.) || (self.low >= 0. && self.high < 0.)
+    }
+}
+
+pub trait SignalRange<T> where T: ValueAt {
     type Output;
 
     fn range(self, low: f64, high: f64) -> Self::Output;
@@ -51,6 +67,7 @@ impl<T: 'static, O: 'static> Add<UGen<O>> for UGen<T> where T: ValueAt, O: Value
     fn add(self, other: UGen<O>) -> Self::Output {
         UGen {
             parameters: Summed { first: self, second: other },
+            range: Range { low: -1., high: 1.} // TODO: not correct!
         }
     }
 }
@@ -61,6 +78,7 @@ impl<T: 'static, O: 'static> Mul<UGen<O>> for UGen<T> where T: ValueAt, O: Value
     fn mul(self, other: UGen<O>) -> Self::Output {
         UGen {
             parameters: Multiplied { first: self, second: other },
+            range: Range { low: -1., high: 1.} // TODO: not correct!
         }
     }
 }
@@ -79,47 +97,47 @@ impl From<f64> for UGen<Constant<f64>> {
     fn from(value: f64) -> Self {
         UGen {
             parameters: Constant { value },
+            range: Range { low: value, high: value }
         }
     }
 }
 
 pub struct Ranged<T> where T: ValueAt {
     signal: UGen<T>,
-    low: f64,
-    high: f64,
+    range: Range,
 }
 
-impl<T: 'static> Range<UGen<T>> for UGen<T> where T: ValueAt {
+impl<T: 'static> SignalRange<UGen<T>> for UGen<T> where T: ValueAt {
     type Output = UGen<Ranged<T>>;
 
-    fn range(self, from: f64, to: f64) -> Self::Output {
+    fn range(self, low: f64, high: f64) -> Self::Output {
         UGen {
-            parameters: Ranged { signal: self, low: from, high: to }
+            parameters: Ranged { signal: self, range: Range { low, high } },
+            range: Range { low, high },
         }
     }
 }
 
 impl<T> ValueAt for Ranged<T> where T: ValueAt {
     fn value_at(&self, clock: f64) -> f64 {
-        let source_central_point = (1. + (-1.))/2.;
-        let dest_central_point = (self.low + self.high)/2.;
-        let add = dest_central_point - source_central_point;
-
-        let source_amp = (1. - (- 1.));
-        let dest_amp = (self.high - self.low);
-        let mul = dest_amp / source_amp;
-
-        (self.signal.value_at(clock) * mul) + add
+        let mut ratio = 0.;
+        let mut offset = 0.;
+        if self.signal.range.is_bipolar() {
+            ratio = self.range.pp_amplitude() * 0.5;
+            offset = ratio + self.range.low;
+        } else {
+            ratio = self.range.pp_amplitude();
+            offset = self.range.low;
+        }
+        (self.signal.value_at(clock) * ratio) + offset
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::ugen::{ValueAt, Range};
+    use crate::ugen::{ValueAt, SignalRange};
     use crate::ugen::generator::Sine;
     use crate::ugen::envelope::Envelope;
-    use std::f64::consts::PI;
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
@@ -135,7 +153,7 @@ mod tests {
         assert_approx_eq!(range.value_at(1.), 5.);
     }
 
-/*    #[test]
+    #[test]
     fn range_on_an_envelope() {
         let envelope = Envelope::ar(1., 1., 0.);
 
@@ -144,6 +162,6 @@ mod tests {
         assert_approx_eq!(range.value_at(0.), -5.);
         assert_approx_eq!(range.value_at(1.), 5.);
         assert_approx_eq!(range.value_at(2.), -5.);
-    }*/
+    }
 
 }
