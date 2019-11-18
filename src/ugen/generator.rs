@@ -29,6 +29,23 @@ impl ValueAt for Sine {
     }
 }
 
+pub struct Saw {
+    frequency: f64,
+    phase: f64,
+}
+
+impl Saw {
+    fn new(frequency: f64, phase: f64) -> Self {
+        Saw { frequency, phase }
+    }
+}
+
+impl ValueAt for Saw {
+    fn value_at(&self, clock: f64) -> f64 {
+        ((((clock + self.phase) * self.frequency) % 1.) - 0.5) * 2.
+    }
+}
+
 pub struct WhiteNoise { }
 
 impl WhiteNoise {
@@ -51,7 +68,7 @@ impl ValueAt for WhiteNoise {
 #[cfg(test)]
 mod tests {
     use crate::ugen::{ValueAt, SignalRange};
-    use crate::ugen::generator::Sine;
+    use crate::ugen::generator::{Sine, Saw};
     use std::f64::consts::PI;
     use assert_approx_eq::assert_approx_eq;
 
@@ -64,6 +81,17 @@ mod tests {
         assert_approx_eq!(sine.value_at(0.5), 0.);
         assert_approx_eq!(sine.value_at(0.75), -1.);
         assert_approx_eq!(sine.value_at(1.), 0.);
+    }
+
+    #[test]
+    fn saw() {
+        let saw = Saw::new(1., 0.);
+
+        assert_approx_eq!(saw.value_at(0.), -1.);
+        assert_approx_eq!(saw.value_at(0.25), -0.5);
+        assert_approx_eq!(saw.value_at(0.5), 0.);
+        assert_approx_eq!(saw.value_at(0.75), 0.5);
+        assert_approx_eq!(saw.value_at(1.), -1.);
     }
 
 }
