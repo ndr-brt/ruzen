@@ -17,7 +17,7 @@ const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 fn main() {
     let pattern_duration = 1;
 
-    thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration *1000) });
+    thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration * 666) });
     thread::spawn(move || loop { pattern("~ snare ~ snare", pattern_duration *1000) });
 
     loop {}
