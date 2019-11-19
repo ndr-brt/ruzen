@@ -34,11 +34,10 @@ pub(crate) fn kick(sample_rate: f64) -> Kick {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0001, 0.09, -4.)),
         signal: {
-            // TODO: make sine accept UGen, for modulation (need a function to scale value maybe)
-            // let modulation = Envelope::ar(0.0001, 1.5, -200.).range(45., 845.).plot();
-            let modulation = 440.;
-            let signal = Sine::new(modulation, 1.)//.plot()
-                * Envelope::line(1., 0., 1.);
+            let signal = Sine::new()
+                .frequency(Envelope::ar(0.0001, 1.5, -200.).range(45., 845.))//.plot()
+                .phase(UGen::from(1.))
+                    * Envelope::line(1., 0., 1.);
 
             Box::new(signal * Envelope::ar(0.0001, 0.09, -4.))
         },
@@ -66,8 +65,8 @@ pub(crate) fn snare(sample_rate: f64) -> Snare {
         envelope: Box::new(Envelope::ar(0.0005, 0.2, -4.)),
         signal: {
             let snare =
-                (Sine::new(30., 0.) * Envelope::ar(0.0005, 0.055, -4.).range(0., 0.25))
-                    + (Sine::new(285., 0.) * Envelope::ar(0.0005, 0.075, -4.).range(0., 0.25))
+                (Sine::new().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.055, -4.).range(0., 0.25))
+                    + (Sine::new().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.075, -4.).range(0., 0.25))
                     + WhiteNoise::new() * UGen::from(0.8); // TODO: maybe here a "mul" function will be more expressive
 
             Box::new(snare * Envelope::ar(0.0005, 0.2, -4.))

@@ -4,28 +4,53 @@ use crate::ugen::{ValueAt, UGen, Range};
 
 /*
 TODO: implement waves
-Self::Saw(frequency, phase) => (((clock + phase) * frequency) % 1.),
 Self::Pulse(frequency, phase) => if ((clock + phase) * frequency) % 1. < 0.5 {1.} else {-1.},
 */
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
 pub struct Sine {
-    frequency: f64,
-    phase: f64,
+    frequency: Box<dyn ValueAt>,
+    phase: Box<dyn ValueAt>,
 }
 
 impl Sine {
-    pub(crate) fn new(frequency: f64, phase: f64) -> UGen<Self> {
+    pub(crate) fn new() -> UGen<Self> {
         UGen {
-            parameters: Sine { frequency, phase },
+            parameters: Sine {
+                frequency: Box::new(UGen::from(440.)),
+                phase: Box::new(UGen::from(0.))
+            },
             range: GENERATOR_RANGE,
+        }
+    }
+}
+
+impl UGen<Sine> {
+
+    pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
+        UGen {
+            parameters: Sine {
+                frequency: Box::new(frequency),
+                phase: self.parameters.phase,
+            },
+            range: self.range,
+        }
+    }
+
+    pub fn phase<T>(self, phase: UGen<T>) -> Self where T: 'static + ValueAt {
+        UGen {
+            parameters: Sine {
+                frequency: self.parameters.frequency,
+                phase: Box::new(phase),
+            },
+            range: self.range,
         }
     }
 }
 
 impl ValueAt for Sine {
     fn value_at(&self, clock: f64) -> f64 {
-        ((clock + self.phase) * self.frequency * 2.0 * PI).sin()
+        ((clock + self.phase.value_at(clock)) * self.frequency.value_at(clock) * 2.0 * PI).sin()
     }
 }
 
