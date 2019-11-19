@@ -56,19 +56,19 @@ impl UGen<Sine> {
         UGen {
             parameters: Sine {
                 frequency: Box::new(frequency),
-                phase: self.parameters.phase,
+                ..self.parameters
             },
-            range: self.range,
+            ..self
         }
     }
 
     pub fn phase<T>(self, phase: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
             parameters: Sine {
-                frequency: self.parameters.frequency,
                 phase: Box::new(phase),
+                ..self.parameters
             },
-            range: self.range,
+            ..self
         }
     }
 }
@@ -89,9 +89,9 @@ impl UGen<Saw> {
         UGen {
             parameters: Saw {
                 frequency: Box::new(frequency),
-                phase: self.parameters.phase,
+                ..self.parameters
             },
-            range: self.range,
+            ..self
         }
     }
 }
