@@ -135,14 +135,14 @@ impl<T> ValueAt for Ranged<T> where T: ValueAt {
 
 #[cfg(test)]
 mod tests {
-    use crate::ugen::{ValueAt, SignalRange};
-    use crate::ugen::generator::Sine;
+    use crate::ugen::{ValueAt, SignalRange, UGen};
+    use crate::ugen::generator::{Generator};
     use crate::ugen::envelope::Envelope;
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
     fn range_on_a_generator() {
-        let sine = Sine::new(1., 0.);
+        let sine = Generator::sine().frequency(UGen::from(1.));
 
         let range = sine.range(0., 10.);
 
