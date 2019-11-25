@@ -4,17 +4,13 @@ use crate::ugen::envelope::Envelope;
 use crate::plot::{Plot};
 use crate::ugen::generator::{Generator};
 
-pub trait Instrument {
-    fn signal(&mut self) -> f64;
-    fn is_finished(&self) -> bool;
-}
-
-pub struct Kick {
+pub struct EnvelopedInstrument {
     envelope: Box<dyn Envelope>,
     clock: Clock,
     signal: Box<dyn ValueAt>,
 }
-impl Instrument for Kick {
+
+impl Instrument for EnvelopedInstrument {
     fn signal(&mut self) -> f64 {
         self.clock.tick();
         self.signal.value_at(self.clock.get())
@@ -24,8 +20,14 @@ impl Instrument for Kick {
         self.clock.get() > self.envelope.duration()
     }
 }
-pub(crate) fn kick(sample_rate: f64) -> Kick {
-    Kick {
+
+pub trait Instrument {
+    fn signal(&mut self) -> f64;
+    fn is_finished(&self) -> bool;
+}
+
+pub(crate) fn kick(sample_rate: f64) -> Box<dyn Instrument> {
+    Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0001, 0.09, -4.)),
         signal: {
@@ -36,26 +38,11 @@ pub(crate) fn kick(sample_rate: f64) -> Kick {
 
             Box::new(signal * Envelope::ar(0.0001, 0.09, -4.))
         },
-    }
+    })
 }
 
-pub struct Snare {
-    envelope: Box<dyn Envelope>,
-    clock: Clock,
-    signal: Box<dyn ValueAt>,
-}
-impl Instrument for Snare {
-    fn signal(&mut self) -> f64 {
-        self.clock.tick();
-        self.signal.value_at(self.clock.get())
-    }
-
-    fn is_finished(&self) -> bool {
-        self.clock.get() > self.envelope.duration()
-    }
-}
-pub(crate) fn snare(sample_rate: f64) -> Snare {
-    Snare {
+pub(crate) fn snare(sample_rate: f64) -> Box<dyn Instrument> {
+    Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0005, 0.2, -4.)),
         signal: {
@@ -66,5 +53,5 @@ pub(crate) fn snare(sample_rate: f64) -> Snare {
 
             Box::new(snare * Envelope::ar(0.0005, 0.2, -4.))
         }
-    }
+    })
 }

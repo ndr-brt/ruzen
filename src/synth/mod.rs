@@ -52,8 +52,8 @@ impl State {
         match command {
             Command::Instrument(name) => {
                 match name.as_str() {
-                    "kick" => self.instruments.push(Box::new(kick(self.sample_rate))),
-                    "snare" => self.instruments.push(Box::new(snare(self.sample_rate))),
+                    "kick" => self.instruments.push(kick(self.sample_rate)),
+                    "snare" => self.instruments.push(snare(self.sample_rate)),
                     any => println!("Instrument {} not known", any)
                 }
             }
