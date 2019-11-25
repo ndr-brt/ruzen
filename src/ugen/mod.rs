@@ -120,15 +120,13 @@ impl<T: 'static> SignalRange<UGen<T>> for UGen<T> where T: ValueAt {
 
 impl<T> ValueAt for Ranged<T> where T: ValueAt {
     fn value_at(&self, clock: f64) -> f64 {
-        let mut ratio = 0.;
-        let mut offset = 0.;
-        if self.signal.range.is_bipolar() {
-            ratio = self.range.pp_amplitude() * 0.5;
-            offset = ratio + self.range.low;
+        let (ratio, offset) = if self.signal.range.is_bipolar() {
+            let ratio = self.range.pp_amplitude() * 0.5;
+            (ratio, ratio + self.range.low)
         } else {
-            ratio = self.range.pp_amplitude();
-            offset = self.range.low;
-        }
+            (self.range.pp_amplitude(), self.range.low)
+        };
+
         (self.signal.value_at(clock) * ratio) + offset
     }
 }

@@ -1,7 +1,7 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
 use crate::clock::{Hz};
-use crate::instrument::{snare, kick, Instruments, Instrument};
+use crate::instrument::{snare, kick, Instrument};
 
 pub struct Synth {
     sample_rate: Hz,
@@ -51,9 +51,10 @@ impl State {
     pub fn interpret(&mut self, command: Command) {
         match command {
             Command::Instrument(name) => {
-                match name {
-                    Instruments::Kick => self.instruments.push(Box::new(kick(self.sample_rate))),
-                    Instruments::Snare => self.instruments.push(Box::new(snare(self.sample_rate))),
+                match name.as_str() {
+                    "kick" => self.instruments.push(Box::new(kick(self.sample_rate))),
+                    "snare" => self.instruments.push(Box::new(snare(self.sample_rate))),
+                    any => println!("Instrument {} not known", any)
                 }
             }
         }
@@ -62,5 +63,5 @@ impl State {
 
 #[derive(PartialEq, Debug)]
 pub enum Command {
-    Instrument(Instruments)
+    Instrument(String)
 }

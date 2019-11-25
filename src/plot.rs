@@ -2,7 +2,6 @@ use gnuplot::{Figure, AxesCommon};
 use gnuplot::Coordinate::Graph;
 use gnuplot::PlotOption::Caption;
 use crate::ugen::{ValueAt, UGen};
-use crate::ugen::envelope::Envelope;
 
 pub(crate) trait Plot {
     fn plot(self) -> Self;

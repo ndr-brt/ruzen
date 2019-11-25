@@ -2,12 +2,7 @@ use crate::clock::{Clock};
 use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::plot::{Plot};
-use crate::ugen::generator::{Sine, WhiteNoise, Generator};
-
-#[derive(PartialEq, Debug)]
-pub enum Instruments {
-    Kick, Snare,
-}
+use crate::ugen::generator::{Generator};
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;

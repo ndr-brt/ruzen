@@ -107,9 +107,8 @@ impl ValueAt for WhiteNoise {
 
 #[cfg(test)]
 mod tests {
-    use crate::ugen::{ValueAt, SignalRange, UGen};
-    use crate::ugen::generator::{Generator, Sine, Saw};
-    use std::f64::consts::PI;
+    use crate::ugen::{ValueAt, UGen};
+    use crate::ugen::generator::{Generator};
     use assert_approx_eq::assert_approx_eq;
 
     #[test]

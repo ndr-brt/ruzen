@@ -1,23 +1,19 @@
 use rosc::OscPacket;
 use crate::synth::Command;
 use std::error::Error;
-use crate::instrument::Instruments::{Kick, Snare};
 
 pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn Error>> {
     match packet {
         OscPacket::Message(msg) => {
             println!("OSC address: {}", msg.addr);
-            let address_tokens = msg.addr.split('/');
+            let tokens: Vec<String> = msg.addr
+                .split('/')
+                .map(String::from)
+                .collect();
 
-            match address_tokens.last() {
-                Some("kick") => {
-                    Result::Ok(Command::Instrument(Kick))
-                },
-                Some("snare") => {
-                    Result::Ok(Command::Instrument(Snare))
-                }
-                Some(_) => {
-                    Result::Err(Box::from("instrument not found"))
+            match tokens.last() {
+                Some(name) => {
+                    Result::Ok(Command::Instrument(name.to_string()))
                 }
                 None => {
                     Result::Err(Box::from("instrument not found"))
@@ -33,9 +29,8 @@ pub(crate) fn message_to_command(packet: OscPacket) -> Result<Command, Box<dyn E
 #[cfg(test)]
 mod tests {
     use super::message_to_command;
-    use rosc::{OscMessage, OscPacket, OscType};
+    use rosc::{OscMessage, OscPacket};
     use crate::synth::Command;
-    use crate::instrument::Instruments;
 
     #[test]
     fn play_kick() {
@@ -47,6 +42,6 @@ mod tests {
         let result = message_to_command(OscPacket::Message(message));
 
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Instrument(Instruments::Kick))
+        assert_eq!(result.unwrap(), Command::Instrument("kick".to_string()))
     }
 }
