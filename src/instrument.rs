@@ -55,3 +55,18 @@ pub(crate) fn snare(sample_rate: f64) -> Box<dyn Instrument> {
         }
     })
 }
+
+pub(crate) fn strange(sample_rate: f64) -> Box<dyn Instrument> {
+    Box::new(EnvelopedInstrument {
+        clock: Clock::new(sample_rate),
+        envelope: Box::new(Envelope::ar(0.1, 1.2, 4.)),
+        signal: {
+            let signal = (
+                Generator::saw().frequency(UGen::from(120.)) * UGen::from(0.5) +
+                    Generator::sine().frequency(UGen::from(100.)) * UGen::from(0.5)
+            );
+
+            Box::new(signal * Envelope::ar(0.1, 1.2, 4.))
+        }
+    })
+}

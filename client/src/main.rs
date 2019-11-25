@@ -19,6 +19,7 @@ fn main() {
 
     thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration * 666) });
     thread::spawn(move || loop { pattern("~ snare ~ snare", pattern_duration *1000) });
+    thread::spawn(move || loop { pattern("strange", pattern_duration *3000) });
 
     loop {}
 }

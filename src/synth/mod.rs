@@ -1,7 +1,7 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
 use crate::clock::{Hz};
-use crate::instrument::{snare, kick, Instrument};
+use crate::instrument::{snare, kick, Instrument, strange};
 
 pub struct Synth {
     sample_rate: Hz,
@@ -54,6 +54,7 @@ impl State {
                 match name.as_str() {
                     "kick" => self.instruments.push(kick(self.sample_rate)),
                     "snare" => self.instruments.push(snare(self.sample_rate)),
+                    "strange" => self.instruments.push(strange(self.sample_rate)),
                     any => println!("Instrument {} not known", any)
                 }
             }
