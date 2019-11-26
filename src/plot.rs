@@ -4,13 +4,12 @@ use gnuplot::PlotOption::Caption;
 use crate::ugen::{ValueAt, UGen};
 
 pub(crate) trait Plot {
-    fn plot(self) -> Self;
+    fn plot(self);
 }
 
 impl<T> Plot for UGen<T> where T: ValueAt {
-    fn plot(self) -> UGen<T> {
+    fn plot(self) {
         const SAMPLE_RATE: usize = 1000;
-        println!("aaaaaaaaaaaaaa");
 
         let mut x_axis: [usize; SAMPLE_RATE as usize] = [0; SAMPLE_RATE as usize];
         let mut values: [f64; SAMPLE_RATE as usize] = [0.; SAMPLE_RATE as usize];
@@ -32,7 +31,5 @@ impl<T> Plot for UGen<T> where T: ValueAt {
             );
 
         fg.show();
-
-        self
     }
 }
