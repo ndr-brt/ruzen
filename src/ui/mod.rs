@@ -27,19 +27,18 @@ impl UIServer {
         loop {
             match sock.recv_from(&mut buf) {
                 Ok((size, _address)) => {
-                    let message = str::from_utf8(&buf[..size]).unwrap().trim();
-                    println!("Received command from socket: {}", message);
+                    match str::from_utf8(&buf[..size]) {
+                        Ok(message) => {
+                            let trimmed = message.trim();
+                            println!("Received command from socket: {}", trimmed);
 
-                    command_out.send(Command::Instrument(String::from(message)));
-//                    let packet = rosc::decoder::decode(&buf[..size]).unwrap();
-//                    match message_to_command(packet) {
-//                        Ok(command) => { command_out.send(command); } ,
-//                        Err(err) => { println!("{}", err) }
-//                    }
+                            command_out.send(Command::Instrument(String::from(trimmed)));
+                        },
+                        Err(e) => println!("Message is not a string: {}", e)
+                    }
                 }
                 Err(e) => {
                     println!("Error receiving from socket: {}", e);
-                    break;
                 }
             }
         }
