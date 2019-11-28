@@ -76,9 +76,11 @@ pub(crate) fn catta(sample_rate: f64) -> Box<dyn Instrument> {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(1., 0.2, 0.)),
         signal: {
+            let firstWidthModulation = Generator::sine().frequency(UGen::from(5.)).range(0.1, 0.9);
+            let secondWidthModulation = Generator::sine().frequency(UGen::from(1.4)).range(0.1, 0.9);
             let signal = (
-                Generator::pulse().frequency(UGen::from(234.)).width(UGen::from(0.1)) * UGen::from(0.5) +
-                    Generator::pulse().frequency(UGen::from(215.)).width(UGen::from(0.15)) * UGen::from(0.5)
+                Generator::pulse().frequency(UGen::from(234.)).width(firstWidthModulation) * UGen::from(0.5) +
+                Generator::pulse().frequency(UGen::from(215.)).width(secondWidthModulation) * UGen::from(0.5)
             );
 
             Box::new(signal * Envelope::ar(1., 0.2, 0.))
