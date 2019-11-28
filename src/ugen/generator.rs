@@ -2,10 +2,6 @@ use crate::rand::Rng;
 use std::f64::consts::PI;
 use crate::ugen::{ValueAt, UGen, Range};
 
-/*
-TODO: implement waves
-Self::Pulse(frequency, phase) => if ((clock + phase) * frequency) % 1. < 0.5 {1.} else {-1.},
-*/
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
 pub trait Generator: ValueAt {}
@@ -26,6 +22,17 @@ impl dyn Generator {
             parameters: Saw {
                 frequency: Box::new(UGen::from(440.)),
                 phase: Box::new(UGen::from(0.))
+            },
+            range: GENERATOR_RANGE,
+        }
+    }
+
+    pub fn pulse() -> UGen<Pulse> {
+        UGen {
+            parameters: Pulse {
+                frequency: Box::new(UGen::from(440.)),
+                phase: Box::new(UGen::from(0.)),
+                width: Box::new(UGen::from(0.5)),
             },
             range: GENERATOR_RANGE,
         }
@@ -89,6 +96,41 @@ impl UGen<Saw> {
         UGen {
             parameters: Saw {
                 frequency: Box::new(frequency),
+                ..self.parameters
+            },
+            ..self
+        }
+    }
+}
+
+pub struct Pulse {
+    frequency: Box<dyn ValueAt>,
+    phase: Box<dyn ValueAt>,
+    width: Box<dyn ValueAt>,
+}
+
+impl ValueAt for Pulse {
+    fn value_at(&self, clock: f64) -> f64 {
+        if ((clock + self.phase.value_at(clock)) * self.frequency.value_at(clock)) % 1. < self.width.value_at(clock) {1.} else {-1.}
+    }
+}
+
+impl UGen<Pulse> {
+    // TODO: there's a way to remove this code to make this simpler?
+    pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
+        UGen {
+            parameters: Pulse {
+                frequency: Box::new(frequency),
+                ..self.parameters
+            },
+            ..self
+        }
+    }
+
+    pub fn width<T>(self, width: UGen<T>) -> Self where T: 'static + ValueAt {
+        UGen {
+            parameters: Pulse {
+                width: Box::new(width),
                 ..self.parameters
             },
             ..self

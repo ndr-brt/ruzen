@@ -70,3 +70,18 @@ pub(crate) fn strange(sample_rate: f64) -> Box<dyn Instrument> {
         }
     })
 }
+
+pub(crate) fn catta(sample_rate: f64) -> Box<dyn Instrument> {
+    Box::new(EnvelopedInstrument {
+        clock: Clock::new(sample_rate),
+        envelope: Box::new(Envelope::ar(1., 0.2, 0.)),
+        signal: {
+            let signal = (
+                Generator::pulse().frequency(UGen::from(234.)).width(UGen::from(0.1)) * UGen::from(0.5) +
+                    Generator::pulse().frequency(UGen::from(215.)).width(UGen::from(0.15)) * UGen::from(0.5)
+            );
+
+            Box::new(signal * Envelope::ar(1., 0.2, 0.))
+        }
+    })
+}
