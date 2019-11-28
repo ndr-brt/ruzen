@@ -1,5 +1,6 @@
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
+use std::str;
 use std::sync::mpsc::Sender;
 use crate::synth::Command;
 
@@ -26,8 +27,10 @@ impl UIServer {
         loop {
             match sock.recv_from(&mut buf) {
                 Ok((size, _address)) => {
-                    println!("Received command from socket");
-                    command_out.send(Command::Instrument(String::from("kick")));
+                    let message = str::from_utf8(&buf[..size]).unwrap().trim();
+                    println!("Received command from socket: {}", message);
+
+                    command_out.send(Command::Instrument(String::from(message)));
 //                    let packet = rosc::decoder::decode(&buf[..size]).unwrap();
 //                    match message_to_command(packet) {
 //                        Ok(command) => { command_out.send(command); } ,
