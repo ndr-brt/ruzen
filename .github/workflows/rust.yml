@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - run: sudo apt install libasound2-dev
     - uses: actions/checkout@v1
     - name: Build
       run: cargo build --verbose
