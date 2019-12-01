@@ -21,12 +21,16 @@ use interpreter::GluonInterpreter;
 
 mod interpreter;
 
-type Hz = f64;
-
 const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 const INTERPRETER_ADDRESS: &str = "127.0.0.1:38043";
 
+fn play_module(thread: &Thread) -> vm::Result<ExternModule> {
+    ExternModule::new(
+        thread,
+        primitive!(1, play)
+    )
+}
 
 fn my_module(thread: &Thread) -> vm::Result<ExternModule> {
     ExternModule::new(
@@ -52,6 +56,7 @@ fn main() {
 
     let vm = gluon::new_vm();
     add_extern_module(&vm, "my_module", my_module);
+    add_extern_module(&vm, "play", play_module);
 
     let (code_out, code_in) = channel::<String>();
 
@@ -59,7 +64,7 @@ fn main() {
        match code_in.recv() {
            Ok(code) => {
                let result = vm
-                   .run_expr::<String>("example", code.as_str())
+                   .run_expr::<String>("client", code.as_str())
                    .ok();
 
                match result {
