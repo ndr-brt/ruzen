@@ -1,6 +1,5 @@
 extern crate rosc;
 extern crate rand;
-#[macro_use]
 extern crate gluon;
 #[macro_use]
 extern crate gluon_vm;
@@ -8,10 +7,7 @@ extern crate gluon_vm;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{UdpSocket};
-use std::time::Duration;
 use std::{thread};
-use rand::thread_rng;
-use crate::rand::Rng;
 use gluon::{ThreadExt, Thread};
 use gluon::import::add_extern_module;
 use gluon::vm;
@@ -48,12 +44,6 @@ fn play(name: &str) -> String {
 }
 
 fn main() {
-    //let pattern_duration = 1;
-
-    //thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration * 666) });
-    //thread::spawn(move || loop { pattern("~ snare ~ snare", pattern_duration *1000) });
-    //thread::spawn(move || loop { pattern("strange", pattern_duration *3000) });
-
     let vm = gluon::new_vm();
     add_extern_module(&vm, "my_module", my_module);
     add_extern_module(&vm, "play", play_module);
@@ -62,6 +52,7 @@ fn main() {
         Ok(_) => println!("Init script loaded"),
         Err(e) => println!("Init script not loaded: {}", e)
     }
+
 
     let (code_out, code_in) = channel::<String>();
 
@@ -73,7 +64,7 @@ fn main() {
                    .ok();
 
                match result {
-                   Some((val, coso)) => println!("Result: {}", val),
+                   Some((val, _arc_type)) => println!("Result: {}", val),
                    None => println!("No f**kn result")
                }
            },
@@ -83,17 +74,6 @@ fn main() {
 
     let interpreter = GluonInterpreter::new(INTERPRETER_ADDRESS);
     interpreter.listen(code_out);
-}
-
-fn pattern(pattern: &str, cycle_time: usize) {
-    let tokens: Vec<&str> = pattern.split(" ").collect();
-    let time_each: usize = cycle_time / tokens.len();
-    tokens.iter().for_each(|token| {
-        if *token != "~" {
-            instrument(token).play();
-        }
-        sleep(time_each as u64);
-    })
 }
 
 struct Instrument<'a> {
@@ -114,14 +94,6 @@ impl Instrument<'_> {
 
         send_osc_message(msg_buf)
     }
-}
-
-fn sleep(time: u64) {
-    std::thread::sleep(Duration::from_millis(time));
-}
-
-fn rrand(from: f64, to: f64) -> f64 {
-    thread_rng().gen_range::<f64, f64, f64>(from, to)
 }
 
 fn instrument(name: &str) -> Instrument {
