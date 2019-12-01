@@ -31,8 +31,6 @@ fn main() {
 
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(cmd_in, sig_out));
-    thread::spawn(move || osc_server.listen(osc_sender));
 
-    let ui_server = UIServer::new("127.0.0.1:38043");
-    ui_server.listen(cmd_out);
+    osc_server.listen(cmd_out);
 }

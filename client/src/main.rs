@@ -9,24 +9,24 @@ use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{UdpSocket};
 use std::time::Duration;
-use std::{f32, thread};
+use std::{thread};
 use rand::thread_rng;
 use crate::rand::Rng;
 use gluon::{ThreadExt, Thread};
 use gluon::import::add_extern_module;
 use gluon::vm;
-use gluon::vm::api::primitive;
 use gluon::vm::ExternModule;
+use std::sync::mpsc::{channel};
+use interpreter::GluonInterpreter;
+
+mod interpreter;
 
 type Hz = f64;
 
 const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
+const INTERPRETER_ADDRESS: &str = "127.0.0.1:38043";
 
-fn play(name: &str) -> String {
-    instrument(name).play();
-    name.to_uppercase()
-}
 
 fn my_module(thread: &Thread) -> vm::Result<ExternModule> {
     ExternModule::new(
@@ -38,38 +38,43 @@ fn my_module(thread: &Thread) -> vm::Result<ExternModule> {
     )
 }
 
-fn main() {
-    let vm = gluon::new_vm();
-    add_extern_module(&vm, "my_module", my_module);
-    loop {
-        let expr = r#"
-            let module = import! "my_module"
-            module.play "strange"
-        "#;
-
-        let result = vm
-            .run_expr::<String>("example", expr)
-            .ok();
-
-        match result {
-            Some((val, coso)) => println!("Result: {}", val),
-            None => println!("No f**kn result")
-        }
-
-        sleep(300)
-    }
-
+fn play(name: &str) -> String {
+    instrument(name).play();
+    name.to_uppercase()
 }
 
-//fn main() {
-//    let pattern_duration = 1;
-//
-//    thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration * 666) });
-//    thread::spawn(move || loop { pattern("~ snare ~ snare", pattern_duration *1000) });
-//    thread::spawn(move || loop { pattern("strange", pattern_duration *3000) });
-//
-//    loop {}
-//}
+fn main() {
+    //let pattern_duration = 1;
+
+    //thread::spawn(move || loop { pattern("kick ~ kick ~", pattern_duration * 666) });
+    //thread::spawn(move || loop { pattern("~ snare ~ snare", pattern_duration *1000) });
+    //thread::spawn(move || loop { pattern("strange", pattern_duration *3000) });
+
+    let vm = gluon::new_vm();
+    add_extern_module(&vm, "my_module", my_module);
+
+    let (code_out, code_in) = channel::<String>();
+
+    thread::spawn(move || loop {
+       match code_in.recv() {
+           Ok(code) => {
+               let result = vm
+                   .run_expr::<String>("example", code.as_str())
+                   .ok();
+
+               match result {
+                   Some((val, coso)) => println!("Result: {}", val),
+                   None => println!("No f**kn result")
+               }
+           },
+           Err(e) => println!("Error receiving code: {}", e)
+       }
+    });
+
+    let interpreter = GluonInterpreter::new(INTERPRETER_ADDRESS);
+    interpreter.listen(code_out);
+    loop {}
+}
 
 fn pattern(pattern: &str, cycle_time: usize) {
     let tokens: Vec<&str> = pattern.split(" ").collect();
@@ -80,15 +85,6 @@ fn pattern(pattern: &str, cycle_time: usize) {
         }
         sleep(time_each as u64);
     })
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Synth<'a> {
-    name: &'a str,
-    frequency: Hz,
-    phase: f32,
-    attack: f64,
-    release: f64,
 }
 
 struct Instrument<'a> {
