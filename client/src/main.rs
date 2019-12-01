@@ -58,6 +58,11 @@ fn main() {
     add_extern_module(&vm, "my_module", my_module);
     add_extern_module(&vm, "play", play_module);
 
+    match vm.load_script("init.glu", "import! \"play\"") {
+        Ok(_) => println!("Init script loaded"),
+        Err(e) => println!("Init script not loaded: {}", e)
+    }
+
     let (code_out, code_in) = channel::<String>();
 
     thread::spawn(move || loop {
@@ -78,7 +83,6 @@ fn main() {
 
     let interpreter = GluonInterpreter::new(INTERPRETER_ADDRESS);
     interpreter.listen(code_out);
-    loop {}
 }
 
 fn pattern(pattern: &str, cycle_time: usize) {
