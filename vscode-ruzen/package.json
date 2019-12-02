@@ -23,7 +23,13 @@
 				"command": "ruzen.eval",
 				"title": "Ruzen: eval line"
 			}
-		]
+		],
+        "keybindings": [
+            {
+                "command": "ruzen.eval",
+                "key": "Shift+Enter"
+            }
+        ]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
