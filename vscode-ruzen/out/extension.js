@@ -18,15 +18,20 @@ function activate(context) {
     });
     var client = udp.createSocket('udp4');
     let evalSingleCommand = vscode.commands.registerCommand('ruzen.eval', () => {
-        client.send('play "kick"', 38043, 'localhost', function (error) {
-            if (error) {
-                console.error(`Error ${error}`);
-                client.close();
-            }
-            else {
-                console.log('Data sent !!!');
-            }
-        });
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+            let currentLine = activeEditor.selection.active.line;
+            const line = activeEditor.document.lineAt(currentLine);
+            client.send(line.text, 38043, 'localhost', function (error) {
+                if (error) {
+                    console.error(`Error ${error}`);
+                    client.close();
+                }
+                else {
+                    console.log('Data sent !!!');
+                }
+            });
+        }
     });
     context.subscriptions.push(disposable, evalSingleCommand);
 }
