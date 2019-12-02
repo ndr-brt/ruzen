@@ -48,11 +48,10 @@ fn main() {
     add_extern_module(&vm, "my_module", my_module);
     add_extern_module(&vm, "play", play_module);
 
-    match vm.load_script("init.glu", "import! \"play\"") {
+    match vm.load_file("ui.init") {
         Ok(_) => println!("Init script loaded"),
         Err(e) => println!("Init script not loaded: {}", e)
     }
-
 
     let (code_out, code_in) = channel::<String>();
 
