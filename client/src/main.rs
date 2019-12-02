@@ -8,9 +8,8 @@ use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{UdpSocket};
 use std::{thread};
-use gluon::{ThreadExt, Thread};
+use gluon::{ThreadExt};
 use gluon::import::add_extern_module;
-use gluon::vm;
 use gluon::vm::ExternModule;
 use std::sync::mpsc::{channel};
 use interpreter::GluonInterpreter;
@@ -21,13 +20,6 @@ const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 const INTERPRETER_ADDRESS: &str = "127.0.0.1:38043";
 
-fn play_module(thread: &Thread) -> vm::Result<ExternModule> {
-    ExternModule::new(
-        thread,
-        primitive!(1, play)
-    )
-}
-
 fn play(name: &str) -> String {
     let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
         addr: format!("/instrument/{}", name),
@@ -35,12 +27,15 @@ fn play(name: &str) -> String {
     })).unwrap();
 
     send_osc_message(msg_buf);
+
     name.to_uppercase()
 }
 
 fn main() {
     let vm = gluon::new_vm();
-    add_extern_module(&vm, "play", play_module);
+    add_extern_module(&vm, "play", |thread|
+        ExternModule::new(thread, primitive!(1, play))
+    );
 
     match vm.load_file("ui.init") {
         Ok(_) => println!("Init script loaded"),
@@ -58,7 +53,7 @@ fn main() {
 
                match result {
                    Some((val, _arc_type)) => println!("Result: {}", val),
-                   None => println!("No f**kn result")
+                   None => println!("No result from gluon run_expr")
                }
            },
            Err(e) => println!("Error receiving code: {}", e)
