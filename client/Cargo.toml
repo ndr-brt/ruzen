@@ -1,5 +1,5 @@
 [package]
-name = "client"
+name = "ruzen-client"
 version = "0.1.0"
 authors = ["Andrea Bertagnolli <andrea.bertagnolli@cherrychain.it>"]
 edition = "2018"
