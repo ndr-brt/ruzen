@@ -28,24 +28,18 @@ fn play_module(thread: &Thread) -> vm::Result<ExternModule> {
     )
 }
 
-fn my_module(thread: &Thread) -> vm::Result<ExternModule> {
-    ExternModule::new(
-        thread,
-        record!{
-            message => "Hello World!",
-            play => primitive!(1, play),
-        }
-    )
-}
-
 fn play(name: &str) -> String {
-    instrument(name).play();
+    let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+        addr: format!("/instrument/{}", name),
+        args: Some(vec![]),
+    })).unwrap();
+
+    send_osc_message(msg_buf);
     name.to_uppercase()
 }
 
 fn main() {
     let vm = gluon::new_vm();
-    add_extern_module(&vm, "my_module", my_module);
     add_extern_module(&vm, "play", play_module);
 
     match vm.load_file("ui.init") {
@@ -73,30 +67,6 @@ fn main() {
 
     let interpreter = GluonInterpreter::new(INTERPRETER_ADDRESS);
     interpreter.listen(code_out);
-}
-
-struct Instrument<'a> {
-    name: &'a str
-}
-impl Instrument<'_> {
-    pub fn new(name: &str) -> Instrument {
-        Instrument {
-            name
-        }
-    }
-
-    pub fn play(&self) {
-        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-            addr: format!("/instrument/{}", self.name),
-            args: Some(vec![]),
-        })).unwrap();
-
-        send_osc_message(msg_buf)
-    }
-}
-
-fn instrument(name: &str) -> Instrument {
-    Instrument::new(name)
 }
 
 fn send_osc_message(msg_buf: Vec<u8>) {
