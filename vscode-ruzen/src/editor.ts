@@ -31,15 +31,15 @@ export class Editor {
 
         let startLineIndex = this.blockStartLine(currentLine);
         let endLineIndex = this.blockEndLine(currentLine);
-        let text = "";
+        let rows = [];
         for (let i = startLineIndex; i <= endLineIndex; i++) {
-            text += this.editor.document.lineAt(i).text + "\n";
+            rows.push(this.editor.document.lineAt(i).text);
         }
         
         let lastLine = this.editor.document.lineAt(endLineIndex);
         let range = new Range(startLineIndex, 0, endLineIndex, lastLine.text.length);
 
-        return new Expression(text, range);
+        return new Expression(rows.join('\n'), range);
     }
 
     public flash(range: Range) {
@@ -65,7 +65,7 @@ export class Editor {
     }
     
     private blockEndLine(currentLine: number): number {
-        for (let i = currentLine - 1; i < this.editor.document.lineCount; i++) {
+        for (let i = currentLine + 1; i < this.editor.document.lineCount; i++) {
             let line = this.editor.document.lineAt(i);
             if (!line.text.trim()) {
                 return i - 1;

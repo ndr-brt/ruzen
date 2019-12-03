@@ -7,13 +7,26 @@ import { Editor } from '../../editor';
 suite('Editor test suite', () => {
 
 	test('Single line evaluation', () => {
-        let editor = new Editor(createMockEditor(createMockDocument(["cursor is here"]),  new Selection(new Position(0, 3), new Position(0, 3))));
+        let document = createMockDocument(["cursor is here"]);
+        let selection = new Selection(new Position(0, 3), new Position(0, 3));
+        let editor = new Editor(createMockEditor(document, selection));
 
         let expression = editor.currentLineExpression();
 
 		assert.equal(expression.code, "cursor is here");
 		assert.deepEqual(expression.range, new Range(0, 0, 0, 14));
-	});
+    });
+    
+    test('Multi line evaluation from first line', () => {
+        let document = createMockDocument(["first line", "second line"]);
+        let selection = new Selection(new Position(0, 3), new Position(0, 3));
+        let editor = new Editor(createMockEditor(document, selection));
+
+        let expression = editor.currentBlockExpression();
+
+		assert.equal(expression.code, "first line\nsecond line");
+		assert.deepEqual(expression.range, new Range(0, 0, 1, 11));
+    })
 });
 
 class TestTextLine implements TextLine {
