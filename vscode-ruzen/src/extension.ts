@@ -10,7 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const ruzen = new Ruzen();
 
-	let evalSingleCommand = vscode.commands.registerCommand('ruzen.eval', () => {
+	let evalSingleCommand = vscode.commands.registerCommand('ruzen.lineEval', () => {
 		const activeEditor = vscode.window.activeTextEditor;
 		if (activeEditor) {
 			let currentLine = activeEditor.selection.active.line;

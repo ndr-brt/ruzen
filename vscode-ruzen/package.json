@@ -16,13 +16,13 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "ruzen.eval",
+				"command": "ruzen.lineEval",
 				"title": "Ruzen: eval line"
 			}
 		],
         "keybindings": [
             {
-                "command": "ruzen.eval",
+                "command": "ruzen.lineEval",
                 "key": "Shift+Enter"
             }
         ]
