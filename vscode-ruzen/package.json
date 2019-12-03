@@ -18,12 +18,20 @@
 			{
 				"command": "ruzen.lineEval",
 				"title": "Ruzen: eval line"
+			},
+			{
+				"command": "ruzen.blockEval",
+				"title": "Ruzen: eval block"
 			}
 		],
         "keybindings": [
             {
                 "command": "ruzen.lineEval",
                 "key": "Shift+Enter"
+			},
+			{
+                "command": "ruzen.blockEval",
+                "key": "Ctrl+Enter"
             }
         ]
 	},

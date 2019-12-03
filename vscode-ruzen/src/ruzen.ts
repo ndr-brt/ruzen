@@ -10,7 +10,8 @@ export class Ruzen {
             if (error) {
                 console.error(`Error ${error}`);
             } else {
-                console.log('Data sent !!!');
+                console.log('Data sent:');
+                console.log(code);
             }
         });
     }
