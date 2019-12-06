@@ -1,0 +1,3 @@
+import! "play"
+
+play "snare ~ kick ~ ~ strange ~ catta"

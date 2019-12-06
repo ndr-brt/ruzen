@@ -13,6 +13,8 @@ use gluon::import::add_extern_module;
 use gluon::vm::ExternModule;
 use std::sync::mpsc::{channel};
 use interpreter::GluonInterpreter;
+use std::thread::sleep;
+use std::time::Duration;
 
 mod interpreter;
 
@@ -20,15 +22,23 @@ const HOST_ADDRESS: &str = "127.0.0.1:38122";
 const SERVER_ADDRESS: &str = "127.0.0.1:38042";
 const INTERPRETER_ADDRESS: &str = "127.0.0.1:38043";
 
-fn play(name: &str) -> String {
-    let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-        addr: format!("/instrument/{}", name),
-        args: Some(vec![]),
-    })).unwrap();
+fn play(command: String) -> String {
+    command
+        .split_whitespace()
+        .for_each(|name| {
+            if name == "~" {
+                sleep(Duration::from_millis(300))
+            } else {
+                let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+                    addr: format!("/instrument/{}", name),
+                    args: Some(vec![]),
+                })).unwrap();
 
-    send_osc_message(msg_buf);
+                send_osc_message(msg_buf);
+            }
+    });
 
-    name.to_uppercase()
+    command.to_uppercase()
 }
 
 fn main() {
