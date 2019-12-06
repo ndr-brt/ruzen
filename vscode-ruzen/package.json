@@ -10,11 +10,15 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onLanguage:gluon"
+		"onCommand:ruzen.start"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
+			{
+				"command": "ruzen.start",
+				"title": "Ruzen: start"
+			},
 			{
 				"command": "ruzen.lineEval",
 				"title": "Ruzen: eval line"

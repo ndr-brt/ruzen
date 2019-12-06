@@ -1,19 +1,13 @@
 extern crate rosc;
 extern crate rand;
-extern crate gluon;
-#[macro_use]
-extern crate gluon_vm;
 extern crate crossbeam;
 
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{UdpSocket};
 use std::{thread};
-use gluon::{ThreadExt, RootedThread};
-use gluon::import::add_extern_module;
-use gluon::vm::ExternModule;
 use std::sync::mpsc::{channel};
-use interpreter::GluonInterpreter;
+use interpreter::UIReceiver;
 use std::thread::sleep;
 use std::time::Duration;
 use std::ops::Div;
@@ -31,39 +25,13 @@ const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 struct Interpreter {
     sender: Sender<Vec<String>>,
-    vm: RootedThread,
 }
 
 impl Interpreter {
     fn new(sender: Sender<Vec<String>>) -> Self {
-/*
-        let play = |command: String| {
-            let array = command.split_whitespace().collect::<[&str]>();
-            sender.send(array);
-            command.to_uppercase()
-        };
-*/
 
-        let vm = gluon::new_vm();
-/*        let ah: fn(Interpreter, String) -> String = Interpreter::play;
-        add_extern_module(&vm, "play", |thread| {
-            ExternModule::new(thread, primitive!(1, ah))
-        });
-
-        match vm.load_file("ui.init") {
-            Ok(_) => println!("Init script loaded"),
-            Err(e) => println!("Init script not loaded: {}", e)
-        }
-*/
-        Interpreter { sender, vm }
+        Interpreter { sender }
     }
-/*
-    fn play(self, command: String) -> String {
-        let array = command.split_whitespace().collect::<Vec<&str>>();
-        self.sender.send(array);
-        command.to_uppercase()
-    }
-    */
 
     fn execute(&self, command: String) {
         let array = command
@@ -72,16 +40,6 @@ impl Interpreter {
             .collect::<Vec<String>>();
 
         self.sender.send(array);
-        /*
-        let result = self.vm
-            .run_expr::<String>("client", code.as_str())
-            .ok();
-
-        match result {
-            Some((val, _arc_type)) => println!("Result: {}", val),
-            None => println!("No result from gluon run_expr")
-        }
-        */
     }
 }
 
@@ -135,7 +93,7 @@ fn main() {
         }
     });
 
-    let interpreter = GluonInterpreter::new(INTERPRETER_ADDRESS);
+    let interpreter = UIReceiver::new(INTERPRETER_ADDRESS);
     interpreter.listen(code_out);
 }
 

@@ -3,13 +3,13 @@ use std::str::FromStr;
 use std::str;
 use std::sync::mpsc::Sender;
 
-pub struct GluonInterpreter {
+pub struct UIReceiver {
     address: SocketAddrV4,
 }
 
-impl GluonInterpreter {
+impl UIReceiver {
     pub fn new(address_string: &str) -> Self {
-        GluonInterpreter {
+        UIReceiver {
             address: match SocketAddrV4::from_str(address_string) {
                 Ok(address) => address,
                 Err(err) => panic!(err),
@@ -17,9 +17,9 @@ impl GluonInterpreter {
         }
     }
 
-    pub fn listen(&self, gluon_out: Sender<String>) {
+    pub fn listen(&self, instruction: Sender<String>) {
         let sock = UdpSocket::bind(self.address).unwrap();
-        println!("Gluon Interpreter listening on {}", self.address);
+        println!("UIReceiver listening on {}", self.address);
 
         let mut buf = [0u8; rosc::decoder::MTU];
 
@@ -29,8 +29,8 @@ impl GluonInterpreter {
                     match str::from_utf8(&buf[..size]) {
                         Ok(message) => {
                             let trimmed = message.trim();
-                            println!("Received code chunk from socket: {}", trimmed);
-                            match gluon_out.send(trimmed.to_string()) {
+                            println!("Received instruction:\n{}", trimmed);
+                            match instruction.send(trimmed.to_string()) {
                                 Ok(_) => println!("Message sent"),
                                 Err(e) => println!("Error sending code chunk {}", e)
                             }

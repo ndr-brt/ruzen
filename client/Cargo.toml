@@ -9,6 +9,4 @@ edition = "2018"
 [dependencies]
 rosc = "0.2.0"
 rand = "0.7.1"
-gluon = "0.13.1"
-gluon_vm = "0.13.1"
 crossbeam = "0.7.3"
