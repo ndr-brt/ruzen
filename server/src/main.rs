@@ -12,7 +12,6 @@ use crate::ui::UIServer;
 mod clock;
 mod out;
 mod plot;
-mod command_factory;
 mod instrument;
 mod synth;
 mod ugen;

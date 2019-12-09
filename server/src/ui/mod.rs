@@ -28,22 +28,13 @@ impl UIServer {
 
     pub fn listen(&self, command_out: Sender<Command>) {
         let (sender, receiver) = channel::<Vec<String>>();
-
-        let interpreter = Interpreter::new(sender);
-
         let (code_out, code_in) = channel::<String>();
+
+        let interpreter = Interpreter::new(code_in, sender);
+        thread::spawn(move || interpreter.loop_forever());
 
         let sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
-
-        thread::spawn(move || loop {
-            match code_in.recv() {
-                Ok(code) => {
-                    interpreter.execute(code.to_string())
-                },
-                Err(e) => println!("Error receiving code: {}", e)
-            }
-        });
 
         thread::spawn(move || {
             let mut index = 0;
