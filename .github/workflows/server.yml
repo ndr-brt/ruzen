@@ -9,8 +9,8 @@ jobs:
 
     steps:
     - run: sudo apt install libasound2-dev
-    - run: cd server
     - uses: actions/checkout@v1
+    - run: cd server
     - name: Build
       run: cargo build --verbose
     - name: Run tests
