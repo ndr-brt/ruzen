@@ -4,13 +4,12 @@ use std::{str, thread};
 use std::sync::mpsc::{Sender, channel};
 use crate::synth::Command;
 use std::thread::sleep;
-use crate::ui::interpreter::UIReceiver;
 use std::time::Duration;
 use std::ops::Div;
+use crate::ui::interpreter::Interpreter;
 
 mod interpreter;
 
-const INTERPRETER_ADDRESS: &str = "127.0.0.1:38043";
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 pub struct UIServer {
@@ -99,25 +98,5 @@ impl UIServer {
                 }
             }
         }
-    }
-}
-
-struct Interpreter {
-    sender: Sender<Vec<String>>,
-}
-
-impl Interpreter {
-    fn new(sender: Sender<Vec<String>>) -> Self {
-
-        Interpreter { sender }
-    }
-
-    fn execute(&self, command: String) {
-        let array = command
-            .split_whitespace()
-            .map(String::from)
-            .collect::<Vec<String>>();
-
-        self.sender.send(array);
     }
 }
