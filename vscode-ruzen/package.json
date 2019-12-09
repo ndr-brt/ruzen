@@ -10,15 +10,12 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:ruzen.start"
+		"onCommand:ruzen.lineEval",
+		"onCommand:ruzen.blockEval"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
-			{
-				"command": "ruzen.start",
-				"title": "Ruzen: start"
-			},
 			{
 				"command": "ruzen.lineEval",
 				"title": "Ruzen: eval line"

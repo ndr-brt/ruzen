@@ -26,11 +26,16 @@ fn main() {
     let (sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
     let sample_rate = out.sample_rate();
     let synth = Synth::new(sample_rate);
-    let osc_server = OscServer::new("127.0.0.1:38042");
-    let osc_sender = cmd_out.clone();
+//    let osc_server = OscServer::new("127.0.0.1:38042");
+//    let osc_sender = cmd_out.clone();
+//    osc_server.listen(cmd_out);
 
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(cmd_in, sig_out));
 
-    osc_server.listen(cmd_out);
+    let ui_server = UIServer::new("127.0.0.1:38043");
+    ui_server.listen(cmd_out);
+
+
+
 }
