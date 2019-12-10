@@ -29,7 +29,4 @@ fn main() {
 
     let ui_server = UIServer::new("127.0.0.1:38043");
     ui_server.listen(cmd_out);
-
-
-
 }
