@@ -38,12 +38,12 @@ impl UIServer {
 
         thread::spawn(move || {
             let mut index = 0;
-            let comand = command_out.clone();
+            let command = command_out.clone();
             loop {
                 match receiver.recv() {
                     Ok(pattern) => {
                         println!("New pattern! {}", pattern.len());
-                        let cmd_out = comand.clone();
+                        let cmd_out = command.clone();
                         thread::spawn(move || {
                             loop {
                                 if pattern.len() == 0 {
