@@ -1,3 +1,5 @@
+extern crate rhai;
+
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 use std::{str, thread};
@@ -6,9 +8,9 @@ use crate::synth::Command;
 use std::thread::sleep;
 use std::time::Duration;
 use std::ops::Div;
-use crate::ui::interpreter::Interpreter;
-
-mod interpreter;
+use rhai::{Engine, Scope};
+use self::rhai::Any;
+use self::rhai::RegisterFn;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -27,45 +29,12 @@ impl UIServer {
     }
 
     pub fn listen(&self, command_out: Sender<Command>) {
-        let (sender, receiver) = channel::<Vec<String>>();
-        let (code_out, code_in) = channel::<String>();
-
-        let interpreter = Interpreter::new(code_in, sender);
-        thread::spawn(move || interpreter.loop_forever());
-
         let sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
-        thread::spawn(move || {
-            let mut index = 0;
-            let command = command_out.clone();
-            loop {
-                match receiver.recv() {
-                    Ok(pattern) => {
-                        println!("New pattern! {}", pattern.len());
-                        let cmd_out = command.clone();
-                        thread::spawn(move || {
-                            loop {
-                                if pattern.len() == 0 {
-                                    sleep(CYCLE_TIME);
-                                    continue;
-                                }
-
-                                if index == pattern.len() {
-                                    index = 0;
-                                }
-
-                                cmd_out.send(Command::Instrument(pattern[index].clone()));
-
-                                sleep(CYCLE_TIME.div(pattern.len() as u32));
-                                index += 1;
-                            }
-                        });
-                    },
-                    Err(e) => println!("Error {}", e)
-                }
-            }
-        });
+        let mut engine = Engine::new();
+        let mut scope = Scope::new();
+        engine.register_fn("sine", sine);
 
         let mut buf = [0u8; rosc::decoder::MTU];
 
@@ -76,9 +45,9 @@ impl UIServer {
                         Ok(message) => {
                             let trimmed = message.trim();
                             println!("Received instruction:\n{}", trimmed);
-                            match code_out.send(trimmed.to_string()) {
-                                Ok(_) => println!("Message sent"),
-                                Err(e) => println!("Error sending code chunk {}", e)
+                            match engine.eval_with_scope::<()>(&mut scope, trimmed) {
+                                Ok(result) => println!("Code evaluated correctly"),
+                                Err(e) => println!("Error: {}", e.to_string())
                             }
                         },
                         Err(e) => println!("Code chunk is not a string: {}", e)
@@ -90,4 +59,8 @@ impl UIServer {
             }
         }
     }
+}
+
+fn sine() {
+    println!("SINE!");
 }

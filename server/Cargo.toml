@@ -12,6 +12,7 @@ failure = "0.1.5"
 rand = "0.7.1"
 rosc = "0.2.0"
 gnuplot = "0.0.31"
+rhai = "0.9.1"
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"

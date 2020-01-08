@@ -3,6 +3,11 @@ use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
 
+pub trait Instrument {
+    fn signal(&mut self) -> f64;
+    fn is_finished(&self) -> bool;
+}
+
 pub struct EnvelopedInstrument {
     envelope: Box<dyn Envelope>,
     clock: Clock,
@@ -20,9 +25,20 @@ impl Instrument for EnvelopedInstrument {
     }
 }
 
-pub trait Instrument {
-    fn signal(&mut self) -> f64;
-    fn is_finished(&self) -> bool;
+pub struct ContinuousInstrument {
+    clock: Clock,
+    signal: Box<dyn ValueAt>,
+}
+
+impl Instrument for ContinuousInstrument {
+    fn signal(&mut self) -> f64 {
+        self.clock.tick();
+        self.signal.value_at(self.clock.get())
+    }
+
+    fn is_finished(&self) -> bool {
+        false
+    }
 }
 
 pub(crate) fn kick(sample_rate: f64) -> Box<dyn Instrument> {
@@ -82,5 +98,12 @@ pub(crate) fn catta(sample_rate: f64) -> Box<dyn Instrument> {
 
             Box::new(signal * Envelope::ar(1., 0.2, 0.))
         }
+    })
+}
+
+pub(crate) fn sine(sample_rate: f64) -> Box<dyn Instrument> {
+    Box::new(ContinuousInstrument {
+        clock: Clock::new(sample_rate),
+        signal: Box::new(Generator::sine())
     })
 }

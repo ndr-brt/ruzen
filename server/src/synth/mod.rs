@@ -1,7 +1,7 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
-use crate::clock::{Hz};
-use crate::instrument::{snare, kick, Instrument, strange, catta};
+use crate::clock::{Hz, Clock};
+use crate::instrument::{snare, kick, Instrument, strange, catta, ContinuousInstrument, sine};
 use std::collections::HashMap;
 
 pub struct Synth {
@@ -66,6 +66,9 @@ impl State {
                     Some(function) => self.instruments.push(function(self.sample_rate)),
                     None => println!("Instrument {} not known", name)
                 }
+            },
+            Command::Wave(name) => {
+                self.instruments.push(sine(self.sample_rate))
             }
         }
     }
@@ -73,5 +76,6 @@ impl State {
 
 #[derive(PartialEq, Debug)]
 pub enum Command {
-    Instrument(String)
+    Instrument(String),
+    Wave(String)
 }
