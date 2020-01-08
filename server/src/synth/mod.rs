@@ -3,6 +3,9 @@ use std::sync::mpsc::{Receiver, SyncSender};
 use crate::clock::{Hz, Clock};
 use crate::instrument::{snare, kick, Instrument, strange, catta, ContinuousInstrument, sine};
 use std::collections::HashMap;
+use std::net::UdpSocket;
+use rosc::OscPacket;
+use crate::OSC_ADDRESS_SERVER;
 
 pub struct Synth {
     sample_rate: Hz,
@@ -13,15 +16,22 @@ impl Synth {
         Synth { sample_rate }
     }
 
-    pub fn loop_forever(&self, command_in: Receiver<Command>, signal_out: SyncSender<f64>) {
+    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_out: SyncSender<f64>) {
         let mut state = State::new(self.sample_rate);
-        state.add("kick", |sample_rate| kick(sample_rate));
-        state.add("snare", |sample_rate| snare(sample_rate));
-        state.add("catta", |sample_rate| catta(sample_rate));
-        state.add("strange", |sample_rate| strange(sample_rate));
+
         loop {
-            if let Ok(command) = command_in.try_recv() {
-                state.interpret(command);
+            if let Ok(packet) = osc_stream.try_recv() {
+                match packet {
+                    OscPacket::Message(msg) => {
+                        println!("OSC address: {}", msg.addr);
+                        println!("OSC arguments: {:?}", msg.args);
+                        state.play();
+                    }
+                    OscPacket::Bundle(bundle) => {
+                        println!("OSC Bundle: {:?}", bundle);
+                        state.play();
+                    }
+                }
             }
 
             let result = signal_out.send(state.next_sample());
@@ -30,6 +40,23 @@ impl Synth {
                 Err(err) => println!("Error: {}", err)
             }
         }
+
+//        let mut state = State::new(self.sample_rate);
+//        state.add("kick", |sample_rate| kick(sample_rate));
+//        state.add("snare", |sample_rate| snare(sample_rate));
+//        state.add("catta", |sample_rate| catta(sample_rate));
+//        state.add("strange", |sample_rate| strange(sample_rate));
+//        loop {
+//            if let Ok(command) = command_in.try_recv() {
+//                state.interpret(command);
+//            }
+//
+//            let result = signal_out.send(state.next_sample());
+//            match result {
+//                Ok(_data) => (),
+//                Err(err) => println!("Error: {}", err)
+//            }
+//        }
     }
 
 }
@@ -57,6 +84,11 @@ impl State {
 
     pub fn add(&mut self, name : &str, definition: fn(f64) -> Box<dyn Instrument>) {
         self.definitions.insert(String::from(name), Box::new(definition));
+    }
+
+    pub fn play(&mut self) {
+        println!("Add new instrument");
+        self.instruments.push(sine (self.sample_rate));
     }
 
     pub fn interpret(&mut self, command: Command) {

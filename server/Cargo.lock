@@ -338,7 +338,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rosc"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -367,7 +367,7 @@ dependencies = [
  "gnuplot 0.0.31 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rhai 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "rosc 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rosc 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -492,7 +492,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "dc220bd33bdce8f093101afe22a037b8eb0e5af33592e6a9caafff0d4cb81cbd"
 "checksum regex-syntax 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)" = "11a7e20d1cce64ef2fed88b66d347f88bd9babb82845b2b858f3edbf59a4f716"
 "checksum rhai 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b1cadbefcdb49a5ea2ea53699ce6b60f28c8a711247ce449ca99e687b0a5d6de"
-"checksum rosc 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f2a578810af5d10498b8c8d34f3d8dc536cde3f5f2f0e81a35bee0867d079b80"
+"checksum rosc 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f0a6261c06ead0b8191098af35de11dafd910e4f28391a2a0c5778aa1eb13161"
 "checksum rustc-demangle 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)" = "4c691c0e608126e00913e33f0ccf3727d5fc84573623b8d65b2df340b5201783"
 "checksum rustc-hash 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7540fc8b0c49f096ee9c961cda096467dce8084bec6bdca2fc83895fd9b28cb8"
 "checksum shlex 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7fdf1b9db47230893d76faad238fd6097fd6d6a9245cd7a4d90dbd639536bbd2"

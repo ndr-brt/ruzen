@@ -2,6 +2,7 @@ use crate::clock::{Clock};
 use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
+use rand::{thread_rng, Rng};
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;
@@ -104,6 +105,6 @@ pub(crate) fn catta(sample_rate: f64) -> Box<dyn Instrument> {
 pub(crate) fn sine(sample_rate: f64) -> Box<dyn Instrument> {
     Box::new(ContinuousInstrument {
         clock: Clock::new(sample_rate),
-        signal: Box::new(Generator::sine())
+        signal: Box::new(Generator::sine().frequency(UGen::from(thread_rng().gen_range(110., 880.))))
     })
 }
