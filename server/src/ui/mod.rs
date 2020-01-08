@@ -11,16 +11,36 @@ use std::ops::Div;
 use rhai::{Engine, Scope};
 use self::rhai::Any;
 use self::rhai::RegisterFn;
+use std::ffi::FromBytesWithNulError;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 pub struct UIServer {
     address: SocketAddrV4,
+    command_out: Sender<Command>,
+}
+
+#[derive(Clone)]
+struct Interpreter {
+    command_out: Sender<Command>
+}
+
+impl Interpreter {
+    fn new(command_out: Sender<Command>) -> Interpreter {
+        Interpreter { command_out }
+    }
+
+    fn sine(&mut self) {
+        println!("SINE!");
+        self.command_out.send(Command::Wave("sine".to_string()));
+    }
+
 }
 
 impl UIServer {
-    pub fn new(address_string: &str) -> Self {
+    pub fn new(address_string: &str, command_out: Sender<Command>) -> Self {
         UIServer {
+            command_out,
             address: match SocketAddrV4::from_str(address_string) {
                 Ok(address) => address,
                 Err(err) => panic!(err),
@@ -28,13 +48,17 @@ impl UIServer {
         }
     }
 
-    pub fn listen(&self, command_out: Sender<Command>) {
+    pub fn listen(&self) {
         let sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
         let mut engine = Engine::new();
         let mut scope = Scope::new();
-        engine.register_fn("sine", sine);
+        let interpreter = Interpreter::new(self.command_out.clone());
+        scope.push(("r".to_string(), Box::new(interpreter)));
+
+        engine.register_type::<Interpreter>();
+        engine.register_fn("sine", Interpreter::sine);
 
         let mut buf = [0u8; rosc::decoder::MTU];
 
@@ -59,8 +83,4 @@ impl UIServer {
             }
         }
     }
-}
-
-fn sine() {
-    println!("SINE!");
 }
