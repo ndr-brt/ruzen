@@ -98,6 +98,7 @@ impl UIServer {
         engine.register_type::<Interpreter>();
         engine.register_fn("sine", Interpreter::sine);
         engine.register_fn("inst", Interpreter::inst);
+        engine.register_fn("wait", wait);
 
         let mut buf = [0u8; rosc::decoder::MTU];
 
@@ -122,4 +123,9 @@ impl UIServer {
             }
         }
     }
+}
+
+fn wait(millis: i64) {
+    println!("wait {}", millis);
+    sleep(Duration::from_millis(millis as u64));
 }
