@@ -90,15 +90,14 @@ impl UIServer {
                 Ok((size, _address)) => {
                     match str::from_utf8(&buf[..size]) {
                         Ok(message) => {
-                            let trimmed = message.trim();
-                            println!("Received instruction:\n{}", trimmed);
+                            println!("Received instruction:\n{}", message);
                             let mut module= Module::new();
                             module.add_str("say_hello", say_hello, Dfn::nl(vec![], Type::Void));
                             load_str("main.dyon", Arc::new(format!(r#"
                                 fn main() {{
                                     {}
                                 }}
-                            "#, trimmed).into()), &mut module);
+                            "#, message).into()), &mut module);
                             runtime.run(&Arc::new(module));
                         },
                         Err(e) => println!("Code chunk is not a string: {}", e)
