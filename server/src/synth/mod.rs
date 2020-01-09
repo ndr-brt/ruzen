@@ -34,6 +34,7 @@ impl Synth {
                                 .split('/')
                                 .map(String::from)
                                 .collect();
+
                         state.instrument(tokens.last().unwrap().to_owned());
                     }
                     OscPacket::Bundle(bundle) => {
