@@ -83,6 +83,8 @@ impl UIServer {
         let mut buf = [0u8; rosc::decoder::MTU];
         let interpreter = Interpreter::new(OSC_ADDRESS_SERVER);
 
+        let mut runtime = Runtime::new();
+
         loop {
             match code_sock.recv_from(&mut buf) {
                 Ok((size, _address)) => {
@@ -97,7 +99,6 @@ impl UIServer {
                                     {}
                                 }}
                             "#, trimmed).into()), &mut module);
-                            let mut runtime = Runtime::new();
                             runtime.run(&Arc::new(module));
                         },
                         Err(e) => println!("Code chunk is not a string: {}", e)
