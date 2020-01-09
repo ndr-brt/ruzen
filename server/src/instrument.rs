@@ -63,7 +63,7 @@ pub(crate) fn snare(sample_rate: f64) -> Box<dyn Instrument> {
         signal: Box::new(
             (Generator::sine().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.055, -4.).range(0., 0.25))
             + (Generator::sine().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.075, -4.).range(0., 0.25))
-            + (Generator::white_noise() * UGen::from(0.8)) // TODO: maybe here a "mul" function will be more expressive
+            + (Generator::white_noise() * UGen::from(0.8))
         )
     })
 }

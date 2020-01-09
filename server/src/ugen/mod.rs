@@ -162,4 +162,15 @@ mod tests {
         assert_approx_eq!(range.value_at(2.), -5.);
     }
 
+    #[test]
+    fn multiply_an_ugen() {
+        let envelope = Envelope::ar(1., 1., 0.);
+
+        let multed = envelope * UGen::from(2.);
+
+        assert_approx_eq!(multed.value_at(0.), 0.);
+        assert_approx_eq!(multed.value_at(1.), 2.);
+        assert_approx_eq!(multed.value_at(2.), 0.);
+    }
+
 }
