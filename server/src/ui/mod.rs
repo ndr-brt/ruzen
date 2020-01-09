@@ -53,16 +53,6 @@ impl Interpreter {
         Interpreter { sender }
     }
 
-    fn sine(&mut self) {
-        println!("SINE!");
-        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-            addr: "/new/sine".to_string(),
-            args: vec![],
-        })).unwrap();
-
-        self.sender.send(msg_buf);
-    }
-
     fn inst(&mut self, name: String) {
         println!("Instrument: {}", name);
         let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
@@ -96,7 +86,6 @@ impl UIServer {
         scope.push(("r".to_string(), Box::new(interpreter)));
 
         engine.register_type::<Interpreter>();
-        engine.register_fn("sine", Interpreter::sine);
         engine.register_fn("inst", Interpreter::inst);
         engine.register_fn("wait", wait);
 
