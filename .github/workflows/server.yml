@@ -10,9 +10,7 @@ jobs:
     steps:
     - run: sudo apt install libasound2-dev
     - uses: actions/checkout@v1
-    - run: cd server
-    - run: ls -l
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --manifest-path server/Cargo.toml
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose --manifest-path server/Cargo.toml
