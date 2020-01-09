@@ -2,6 +2,7 @@ use crate::clock::{Clock};
 use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
+use std::ops::Mul;
 use rand::{thread_rng, Rng};
 
 pub trait Instrument {
@@ -63,7 +64,7 @@ pub(crate) fn snare(sample_rate: f64) -> Box<dyn Instrument> {
         signal: Box::new(
             (Generator::sine().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.055, -4.).range(0., 0.25))
             + (Generator::sine().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.075, -4.).range(0., 0.25))
-            + (Generator::white_noise() * UGen::from(0.8))
+            + (Generator::white_noise().mul(UGen::from(0.8)))
         )
     })
 }
