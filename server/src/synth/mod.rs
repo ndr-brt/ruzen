@@ -18,6 +18,11 @@ impl Synth {
 
     pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_out: SyncSender<f64>) {
         let mut state = State::new(self.sample_rate);
+        state.add("kick", |sample_rate| kick(sample_rate));
+        state.add("snare", |sample_rate| snare(sample_rate));
+        state.add("catta", |sample_rate| catta(sample_rate));
+        state.add("strange", |sample_rate| strange(sample_rate));
+        state.add("sine", |sample_rate| sine(sample_rate));
 
         loop {
             if let Ok(packet) = osc_stream.try_recv() {
@@ -25,11 +30,14 @@ impl Synth {
                     OscPacket::Message(msg) => {
                         println!("OSC address: {}", msg.addr);
                         println!("OSC arguments: {:?}", msg.args);
-                        state.play();
+                        let tokens: Vec<String> = msg.addr
+                                .split('/')
+                                .map(String::from)
+                                .collect();
+                        state.instrument(tokens.last().unwrap().to_owned());
                     }
                     OscPacket::Bundle(bundle) => {
                         println!("OSC Bundle: {:?}", bundle);
-                        state.play();
                     }
                 }
             }
@@ -41,22 +49,6 @@ impl Synth {
             }
         }
 
-//        let mut state = State::new(self.sample_rate);
-//        state.add("kick", |sample_rate| kick(sample_rate));
-//        state.add("snare", |sample_rate| snare(sample_rate));
-//        state.add("catta", |sample_rate| catta(sample_rate));
-//        state.add("strange", |sample_rate| strange(sample_rate));
-//        loop {
-//            if let Ok(command) = command_in.try_recv() {
-//                state.interpret(command);
-//            }
-//
-//            let result = signal_out.send(state.next_sample());
-//            match result {
-//                Ok(_data) => (),
-//                Err(err) => println!("Error: {}", err)
-//            }
-//        }
     }
 
 }
@@ -86,22 +78,11 @@ impl State {
         self.definitions.insert(String::from(name), Box::new(definition));
     }
 
-    pub fn play(&mut self) {
-        println!("Add new instrument");
-        self.instruments.push(sine (self.sample_rate));
-    }
-
-    pub fn interpret(&mut self, command: Command) {
-        match command {
-            Command::Instrument(name) => {
-                match self.definitions.get(name.as_str()) {
-                    Some(function) => self.instruments.push(function(self.sample_rate)),
-                    None => println!("Instrument {} not known", name)
-                }
-            },
-            Command::Wave(name) => {
-                self.instruments.push(sine(self.sample_rate))
-            }
+    pub fn instrument(&mut self, name: String) {
+        println!("Play new instrument: {}", name);
+        match self.definitions.get(name.as_str()) {
+            Some(function) => self.instruments.push(function(self.sample_rate)),
+            None => println!("Instrument {} not known", name)
         }
     }
 }

@@ -63,6 +63,16 @@ impl Interpreter {
         self.sender.send(msg_buf);
     }
 
+    fn inst(&mut self, name: String) {
+        println!("Instrument: {}", name);
+        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+            addr: "/instrument/".to_owned() + &name, // TODO: use string format
+            args: vec![],
+        })).unwrap();
+
+        self.sender.send(msg_buf);
+    }
+
 }
 
 impl UIServer {
@@ -87,6 +97,7 @@ impl UIServer {
 
         engine.register_type::<Interpreter>();
         engine.register_fn("sine", Interpreter::sine);
+        engine.register_fn("inst", Interpreter::inst);
 
         let mut buf = [0u8; rosc::decoder::MTU];
 
