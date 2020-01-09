@@ -1,6 +1,8 @@
 extern crate cpal;
 extern crate failure;
 extern crate rand;
+#[macro_use]
+extern crate dyon;
 
 use std::sync::mpsc::{sync_channel, channel};
 use std::thread;

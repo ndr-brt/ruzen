@@ -1,4 +1,3 @@
-extern crate rhai;
 extern crate rosc;
 
 use std::net::{SocketAddrV4, UdpSocket};
@@ -9,15 +8,14 @@ use crate::synth::Command;
 use std::thread::sleep;
 use std::time::Duration;
 use std::ops::Div;
-use rhai::{Engine, Scope};
-use rhai::Any;
-use rhai::RegisterFn;
+use dyon::{error, run, Module, Dfn, load};
 use std::ffi::FromBytesWithNulError;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
-use crate::OSC_ADDRESS_CLIENT;
-
-const CYCLE_TIME: Duration = Duration::from_secs(1);
+use crate::{OSC_ADDRESS_CLIENT, OSC_ADDRESS_SERVER};
+use dyon::{run_str, Runtime, load_str};
+use std::sync::Arc;
+use dyon::Type;
 
 pub struct UIServer {
     address: SocketAddrV4,
@@ -35,7 +33,6 @@ impl Interpreter {
 
         thread::spawn(move || {
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
-            let mut buf = [0u8; rosc::decoder::MTU];
 
             loop {
                 match receiver.recv() {
@@ -60,7 +57,10 @@ impl Interpreter {
             args: vec![],
         })).unwrap();
 
-        self.sender.send(msg_buf);
+        match self.sender.send(msg_buf) {
+            Ok(_) => {},
+            Err(_) => {}
+        };
     }
 
 }
@@ -80,16 +80,8 @@ impl UIServer {
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
-        let mut engine = Engine::new();
-        let mut scope = Scope::new();
-        let interpreter = Interpreter::new(self.osc_address_server);
-        scope.push(("r".to_string(), Box::new(interpreter)));
-
-        engine.register_type::<Interpreter>();
-        engine.register_fn("inst", Interpreter::inst);
-        engine.register_fn("wait", wait);
-
         let mut buf = [0u8; rosc::decoder::MTU];
+        let interpreter = Interpreter::new(OSC_ADDRESS_SERVER);
 
         loop {
             match code_sock.recv_from(&mut buf) {
@@ -98,10 +90,15 @@ impl UIServer {
                         Ok(message) => {
                             let trimmed = message.trim();
                             println!("Received instruction:\n{}", trimmed);
-                            match engine.eval_with_scope::<()>(&mut scope, trimmed) {
-                                Ok(result) => println!("Code evaluated correctly"),
-                                Err(e) => println!("Error: {}", e.to_string())
-                            }
+                            let mut module= Module::new();
+                            module.add_str("say_hello", say_hello, Dfn::nl(vec![], Type::Void));
+                            load_str("main.dyon", Arc::new(format!(r#"
+                                fn main() {{
+                                    {}
+                                }}
+                            "#, trimmed).into()), &mut module);
+                            let mut runtime = Runtime::new();
+                            runtime.run(&Arc::new(module));
                         },
                         Err(e) => println!("Code chunk is not a string: {}", e)
                     }
@@ -112,9 +109,9 @@ impl UIServer {
             }
         }
     }
+
 }
 
-fn wait(millis: i64) {
-    println!("wait {}", millis);
-    sleep(Duration::from_millis(millis as u64));
-}
+dyon_fn!{fn say_hello() {
+    println!("hi!");
+}}

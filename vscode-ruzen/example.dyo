@@ -1,0 +1,13 @@
+fn find_sum(n: f64) -> f64 {
+    res := sum i n { i + 1 }
+    println(res)
+    return clone(res)
+}
+fn main() {
+    a := go find_sum(1_000_000)
+    // println(unwrap(join(thread: a))) // prints `500000500000`
+    loop {
+        println("aaa")
+        sleep(0.5)
+    }
+}
