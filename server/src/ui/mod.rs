@@ -19,6 +19,7 @@ use dyon::Type;
 
 pub struct UIServer {
     address: SocketAddrV4,
+    dyon_runtime: Runtime,
     osc_address_server: &'static str,
 }
 
@@ -69,6 +70,7 @@ impl UIServer {
     pub fn new(ui_address_in: &str, osc_address_server: &'static str) -> Self {
         UIServer {
             osc_address_server,
+            dyon_runtime: Runtime::new(),
             address: match SocketAddrV4::from_str(ui_address_in) {
                 Ok(address) => address,
                 Err(err) => panic!(err),
@@ -76,30 +78,18 @@ impl UIServer {
         }
     }
 
-    pub fn listen(&self) {
+    pub fn listen(&mut self) {
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
         let mut buf = [0u8; rosc::decoder::MTU];
         let interpreter = Interpreter::new(OSC_ADDRESS_SERVER);
 
-        let mut runtime = Runtime::new();
-
         loop {
             match code_sock.recv_from(&mut buf) {
                 Ok((size, _address)) => {
                     match str::from_utf8(&buf[..size]) {
-                        Ok(message) => {
-                            println!("Received instruction:\n{}", message);
-                            let mut module= Module::new();
-                            module.add_str("say_hello", say_hello, Dfn::nl(vec![], Type::Void));
-                            load_str("main.dyon", Arc::new(format!(r#"
-                                fn main() {{
-                                    {}
-                                }}
-                            "#, message).into()), &mut module);
-                            runtime.run(&Arc::new(module));
-                        },
+                        Ok(message) => self.evaluate_code(message),
                         Err(e) => println!("Code chunk is not a string: {}", e)
                     }
                 }
@@ -110,6 +100,18 @@ impl UIServer {
         }
     }
 
+    fn evaluate_code(&mut self, message: &str) -> () {
+        println!("Received instruction:\n{}", message);
+        let mut module = Module::new();
+        module.add_str("say_hello", say_hello, Dfn::nl(vec![], Type::Void));
+        load_str("main.dyon", Arc::new(format!(r#"
+                                fn main() {{
+                                    {}
+                                }}
+                            "#, message).into()), &mut module);
+
+        self.dyon_runtime.run(&Arc::new(module));
+    }
 }
 
 dyon_fn!{fn say_hello() {

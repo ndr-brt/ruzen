@@ -53,6 +53,6 @@ fn main() {
         }
     });
 
-    let ui_server = UIServer::new(UI_ADDRESS_IN, OSC_ADDRESS_SERVER);
+    let mut ui_server = UIServer::new(UI_ADDRESS_IN, OSC_ADDRESS_SERVER);
     ui_server.listen();
 }
