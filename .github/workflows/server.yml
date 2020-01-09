@@ -11,6 +11,7 @@ jobs:
     - run: sudo apt install libasound2-dev
     - uses: actions/checkout@v1
     - run: cd server
+    - run: ls -l
     - name: Build
       run: cargo build --verbose
     - name: Run tests
