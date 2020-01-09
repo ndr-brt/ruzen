@@ -1,4 +1,4 @@
-name: ruzen-server
+name: server
 
 on: [push]
 
