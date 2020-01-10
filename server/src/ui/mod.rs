@@ -86,27 +86,11 @@ impl UIServer {
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
             let interpreter = Interpreter::new(self.osc_address_server);
 
-            let sender_clone = interpreter.sender();
-            match lua_ctx.create_function(move |_, (name): String| {
-                println!("Instrument: {}", name);
-                let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-                    addr: "/instrument/".to_owned() + &name, // TODO: use string format
-                    args: vec![],
-                })).unwrap();
-
-                sender_clone.send(msg_buf);
-
-                Ok(())
-            }) {
-                Ok(function) => { globals.set("play", function); },
-                Err(e) => println!("Error loading function play {}", e.to_string())
-            }
-
             let sender_clone2 = interpreter.sender();
             match lua_ctx.create_function(move |_, (id, name): (String, String)| {
                 println!("Instrument: {}", name);
                 let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-                    addr: "/instrument/".to_owned() + &name + "/" + &id, // TODO: use string format
+                    addr: format!("/instrument/{}/{}", name, id),
                     args: vec![],
                 })).unwrap();
 
