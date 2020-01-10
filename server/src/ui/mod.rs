@@ -13,7 +13,7 @@ use std::ffi::FromBytesWithNulError;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
 use crate::OSC_ADDRESS_CLIENT;
-use rlua::Lua;
+use rlua::{Function, Lua, MetaMethod, Result, UserData, UserDataMethods, Variadic};
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -86,6 +86,15 @@ impl UIServer {
 
             globals.set("string_var", "hello");
             globals.set("int_var", 42);
+
+            let check_equal =
+                lua_ctx.create_function(|_, (list1, list2): (Vec<String>, Vec<String>)| {
+                    // This function just checks whether two string lists are equal, and in an inefficient way.
+                    // Lua callbacks return `rlua::Result`, an Ok value is a normal return, and an Err return
+                    // turns into a Lua 'error'.  Again, any type that is convertible to Lua may be returned.
+                    Ok(list1 == list2)
+                }).unwrap();
+            globals.set("check_equal", check_equal);
         });
 
         let mut buf = [0u8; rosc::decoder::MTU];
