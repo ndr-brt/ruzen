@@ -4,7 +4,6 @@ extern crate rosc;
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 use std::{str, thread};
-use std::sync::mpsc::{Sender, channel};
 use std::time::Duration;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
@@ -14,47 +13,13 @@ use std::fs::File;
 use std::io::Read;
 use std::error::Error;
 use self::rlua::ExternalError;
+use crate::ui::interpreter::Interpreter;
 
-const CYCLE_TIME: Duration = Duration::from_secs(1);
+mod interpreter;
 
 pub struct UIServer {
     address: SocketAddrV4,
     osc_address_server: &'static str,
-}
-
-#[derive(Clone)]
-struct Interpreter {
-    osc_sink: Sender<OscPacket>,
-}
-
-impl Interpreter {
-    fn new(osc_address_out: &'static str) -> Interpreter {
-        let (osc_sink, osc_stream) = channel::<OscPacket>();
-
-        thread::spawn(move || {
-            let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
-            let mut buf = [0u8; rosc::decoder::MTU];
-
-            loop {
-                match osc_stream.recv() {
-                    Ok(osc) => {
-                        match socket.send_to(encoder::encode(&osc).unwrap().as_slice(), osc_address_out) {
-                            Ok(size) => println!("Sent {} osc bytes to server", size),
-                            Err(e) => println!("Error sending osc message to server: {}", e.to_string())
-                        }
-                    },
-                    Err(e) => println!("Some error receiving osc message to send: {}", e.to_string())
-                }
-            }
-        });
-
-        Interpreter { osc_sink }
-    }
-
-    fn sender(&self) -> Sender<OscPacket> {
-        self.osc_sink.clone()
-    }
-
 }
 
 impl UIServer {
