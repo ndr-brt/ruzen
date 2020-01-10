@@ -1,4 +1,4 @@
-extern crate rhai;
+extern crate rlua;
 extern crate rosc;
 
 use std::net::{SocketAddrV4, UdpSocket};
@@ -9,13 +9,11 @@ use crate::synth::Command;
 use std::thread::sleep;
 use std::time::Duration;
 use std::ops::Div;
-use rhai::{Engine, Scope};
-use rhai::Any;
-use rhai::RegisterFn;
 use std::ffi::FromBytesWithNulError;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
 use crate::OSC_ADDRESS_CLIENT;
+use rlua::Lua;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -80,14 +78,15 @@ impl UIServer {
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
-        let mut engine = Engine::new();
-        let mut scope = Scope::new();
         let interpreter = Interpreter::new(self.osc_address_server);
-        scope.push(("r".to_string(), Box::new(interpreter)));
 
-        engine.register_type::<Interpreter>();
-        engine.register_fn("inst", Interpreter::inst);
-        engine.register_fn("wait", wait);
+        let lua = Lua::new();
+        lua.context(|lua_ctx| {
+            let globals = lua_ctx.globals();
+
+            globals.set("string_var", "hello");
+            globals.set("int_var", 42);
+        });
 
         let mut buf = [0u8; rosc::decoder::MTU];
 
@@ -96,12 +95,14 @@ impl UIServer {
                 Ok((size, _address)) => {
                     match str::from_utf8(&buf[..size]) {
                         Ok(message) => {
-                            let trimmed = message.trim();
-                            println!("Received instruction:\n{}", trimmed);
-                            match engine.eval_with_scope::<()>(&mut scope, trimmed) {
-                                Ok(result) => println!("Code evaluated correctly"),
-                                Err(e) => println!("Error: {}", e.to_string())
-                            }
+                            println!("Received instruction:\n{}", message);
+                            lua.context(|context| {
+                                context
+                                    .load(message)
+                                    .set_name("example code")
+                                    .unwrap()
+                                    .exec();
+                            });
                         },
                         Err(e) => println!("Code chunk is not a string: {}", e)
                     }
