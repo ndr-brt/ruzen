@@ -22,6 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 		ruzen.eval(expression.code);
 		editor.flash(expression.range);
 	});
+
+	// TODO: add selectionEval? (to evaluate a selection)
 	
 	context.subscriptions.push(evalLine, evalBlock);
 }

@@ -20,7 +20,7 @@ pub struct UIServer {
 
 #[derive(Clone)]
 struct Interpreter {
-    sender: Sender<Vec<u8>>,
+    sender: Sender<Vec<u8>>, // TODO: turn it into a sender of OscPacket?
 }
 
 impl Interpreter {
@@ -45,16 +45,6 @@ impl Interpreter {
         });
 
         Interpreter { sender }
-    }
-
-    fn inst(&mut self, name: String) {
-        println!("Instrument: {}", name);
-        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-            addr: "/instrument/".to_owned() + &name, // TODO: use string format
-            args: vec![],
-        })).unwrap();
-
-        self.sender.send(msg_buf);
     }
 
     fn sender(&self) -> Sender<Vec<u8>> {
@@ -86,7 +76,6 @@ impl UIServer {
             let interpreter = Interpreter::new(self.osc_address_server);
 
             let sender_clone = interpreter.sender();
-
             match lua_ctx.create_function(move |_, (name): String| {
                 println!("Instrument: {}", name);
                 let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
@@ -100,6 +89,22 @@ impl UIServer {
             }) {
                 Ok(function) => { globals.set("play", function); },
                 Err(e) => println!("Error loading function play {}", e.to_string())
+            }
+
+            let sender_clone2 = interpreter.sender();
+            match lua_ctx.create_function(move |_, (id, name): (String, String)| {
+                println!("Instrument: {}", name);
+                let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+                    addr: "/instrument/".to_owned() + &name + "/" + &id, // TODO: use string format
+                    args: vec![],
+                })).unwrap();
+
+                sender_clone2.send(msg_buf);
+
+                Ok(id)
+            }) {
+                Ok(function) => { globals.set("inst", function); },
+                Err(e) => println!("Error loading function inst {}", e.to_string())
             }
         });
 

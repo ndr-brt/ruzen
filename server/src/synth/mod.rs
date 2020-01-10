@@ -35,7 +35,10 @@ impl Synth {
                                 .map(String::from)
                                 .collect();
 
-                        state.instrument(tokens.last().unwrap().to_owned());
+                        let name = tokens.get(2).unwrap();
+                        let id = tokens.last().unwrap();
+
+                        state.instrument(id.to_owned(), name.to_owned());
                     }
                     OscPacket::Bundle(bundle) => {
                         println!("OSC Bundle: {:?}", bundle);
@@ -79,10 +82,10 @@ impl State {
         self.definitions.insert(String::from(name), Box::new(definition));
     }
 
-    pub fn instrument(&mut self, name: String) {
+    pub fn instrument(&mut self, id: String, name: String) {
         println!("Play new instrument: {}", name);
         match self.definitions.get(name.as_str()) {
-            Some(function) => { self.instruments.insert("key".to_string(), function(self.sample_rate)); },
+            Some(function) => { self.instruments.insert(id, function(self.sample_rate)); },
             None => println!("Instrument {} not known", name)
         }
     }
