@@ -10,6 +10,10 @@ use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
 use crate::{OSC_ADDRESS_CLIENT, OSC_ADDRESS_SERVER};
 use rlua::{Function, Lua, MetaMethod, Result, UserData, UserDataMethods, Variadic};
+use std::fs::File;
+use std::io::Read;
+use std::error::Error;
+use self::rlua::ExternalError;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -70,6 +74,13 @@ impl UIServer {
 
         let lua = Lua::new();
         lua.context(|lua_ctx| {
+            match read_file("src/ui/ui.lua".to_string()) {
+                Ok(script) => {
+                    lua_ctx.load(&script).exec();
+                },
+                Err(e) => println!("{}", e.to_string())
+            }
+
             let globals = lua_ctx.globals();
 
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
@@ -135,5 +146,15 @@ impl UIServer {
                 }
             }
         }
+    }
+}
+
+fn read_file(path: String) -> Result<String> {
+    let mut script_file = File::open(path).expect("could not open script");
+    let mut script = String::new();
+
+    match script_file.read_to_string(&mut script) {
+        Ok(size) => Ok(script),
+        Err(e) => Err(e.to_lua_err())
     }
 }
