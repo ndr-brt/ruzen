@@ -56,7 +56,7 @@ impl Synth {
 
 pub struct State {
     sample_rate: Hz,
-    instruments: Vec<Box<dyn Instrument>>,
+    instruments: HashMap<String, Box<dyn Instrument>>,
     definitions: HashMap<String, Box<dyn Fn(f64) -> Box<dyn Instrument>>>,
 }
 
@@ -64,15 +64,15 @@ impl State {
     pub fn new(sample_rate: Hz) -> State {
         State {
             sample_rate,
-            instruments: Vec::new(),
+            instruments: HashMap::new(),
             definitions: HashMap::new(),
         }
     }
 
     pub fn next_sample(&mut self) -> f64 {
-        self.instruments.retain(|i| !i.is_finished());
+        self.instruments.retain(|_, instrument| !instrument.is_finished());
 
-        self.instruments.iter_mut().map(|w| w.signal()).sum()
+        self.instruments.iter_mut().map(|(_, i)| i.signal()).sum()
     }
 
     pub fn add(&mut self, name : &str, definition: fn(f64) -> Box<dyn Instrument>) {
@@ -82,14 +82,8 @@ impl State {
     pub fn instrument(&mut self, name: String) {
         println!("Play new instrument: {}", name);
         match self.definitions.get(name.as_str()) {
-            Some(function) => self.instruments.push(function(self.sample_rate)),
+            Some(function) => { self.instruments.insert("key".to_string(), function(self.sample_rate)); },
             None => println!("Instrument {} not known", name)
         }
     }
-}
-
-#[derive(PartialEq, Debug)]
-pub enum Command {
-    Instrument(String),
-    Wave(String)
 }

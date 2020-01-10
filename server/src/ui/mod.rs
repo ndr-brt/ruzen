@@ -5,7 +5,6 @@ use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 use std::{str, thread};
 use std::sync::mpsc::{Sender, channel};
-use crate::synth::Command;
 use std::time::Duration;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
@@ -88,7 +87,7 @@ impl UIServer {
 
             let sender_clone = interpreter.sender();
 
-            match lua_ctx.create_function(move |_, (name): (String)| {
+            match lua_ctx.create_function(move |_, (name): String| {
                 println!("Instrument: {}", name);
                 let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
                     addr: "/instrument/".to_owned() + &name, // TODO: use string format

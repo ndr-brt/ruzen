@@ -6,7 +6,7 @@ use std::sync::mpsc::{sync_channel, channel};
 use std::thread;
 
 use crate::out::Out;
-use crate::synth::{Synth, Command };
+use crate::synth::Synth;
 use crate::ui::UIServer;
 use rosc::OscPacket;
 use std::net::UdpSocket;

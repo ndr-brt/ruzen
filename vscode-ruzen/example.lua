@@ -23,4 +23,13 @@ end
 
 start()
 
-print(coroutine.status(sn))
+for i=1,10 do 
+    play("kick")
+    sleep(0.05)
+    play("snare")
+    sleep(0.15)
+    play("catta")
+    sleep(0.15)
+    play("kick")
+    sleep(0.10)
+end
