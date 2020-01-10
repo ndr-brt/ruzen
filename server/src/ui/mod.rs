@@ -24,21 +24,21 @@ pub struct UIServer {
 
 #[derive(Clone)]
 struct Interpreter {
-    sender: Sender<Vec<u8>>, // TODO: turn it into a sender of OscPacket?
+    osc_sink: Sender<OscPacket>,
 }
 
 impl Interpreter {
     fn new(osc_address_out: &'static str) -> Interpreter {
-        let (sender, receiver) = channel::<Vec<u8>>();
+        let (osc_sink, osc_stream) = channel::<OscPacket>();
 
         thread::spawn(move || {
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
             let mut buf = [0u8; rosc::decoder::MTU];
 
             loop {
-                match receiver.recv() {
+                match osc_stream.recv() {
                     Ok(osc) => {
-                        match socket.send_to(osc.as_slice(), osc_address_out) {
+                        match socket.send_to(encoder::encode(&osc).unwrap().as_slice(), osc_address_out) {
                             Ok(size) => println!("Sent {} osc bytes to server", size),
                             Err(e) => println!("Error sending osc message to server: {}", e.to_string())
                         }
@@ -48,11 +48,11 @@ impl Interpreter {
             }
         });
 
-        Interpreter { sender }
+        Interpreter { osc_sink }
     }
 
-    fn sender(&self) -> Sender<Vec<u8>> {
-        self.sender.clone()
+    fn sender(&self) -> Sender<OscPacket> {
+        self.osc_sink.clone()
     }
 
 }
@@ -89,12 +89,10 @@ impl UIServer {
             let sender_clone2 = interpreter.sender();
             match lua_ctx.create_function(move |_, (id, name): (String, String)| {
                 println!("Instrument: {}", name);
-                let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+                sender_clone2.send(OscPacket::Message(OscMessage {
                     addr: format!("/instrument/{}/{}", name, id),
                     args: vec![],
-                })).unwrap();
-
-                sender_clone2.send(msg_buf);
+                }));
 
                 Ok(id)
             }) {
