@@ -12,7 +12,7 @@ use std::ops::Div;
 use std::ffi::FromBytesWithNulError;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
-use crate::OSC_ADDRESS_CLIENT;
+use crate::{OSC_ADDRESS_CLIENT, OSC_ADDRESS_SERVER};
 use rlua::{Function, Lua, MetaMethod, Result, UserData, UserDataMethods, Variadic};
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
@@ -61,6 +61,10 @@ impl Interpreter {
         self.sender.send(msg_buf);
     }
 
+    fn sender(&self) -> Sender<Vec<u8>> {
+        self.sender.clone()
+    }
+
 }
 
 impl UIServer {
@@ -78,8 +82,6 @@ impl UIServer {
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
-        let interpreter = Interpreter::new(self.osc_address_server);
-
         let lua = Lua::new();
         lua.context(|lua_ctx| {
             let globals = lua_ctx.globals();
@@ -95,6 +97,26 @@ impl UIServer {
                     Ok(list1 == list2)
                 }).unwrap();
             globals.set("check_equal", check_equal);
+
+            let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
+            let interpreter = Interpreter::new(self.osc_address_server);
+
+            let sender_clone = interpreter.sender();
+
+            match lua_ctx.create_function(move |_, (name): (String)| {
+                println!("Instrument: {}", name);
+                let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+                    addr: "/instrument/".to_owned() + &name, // TODO: use string format
+                    args: vec![],
+                })).unwrap();
+
+                sender_clone.send(msg_buf);
+
+                Ok(())
+            }) {
+                Ok(function) => {globals.set("play", function);},
+                Err(e) => println!("Error loading function play {}", e.to_string())
+            }
         });
 
         let mut buf = [0u8; rosc::decoder::MTU];
