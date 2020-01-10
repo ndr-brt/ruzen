@@ -6,10 +6,7 @@ use std::str::FromStr;
 use std::{str, thread};
 use std::sync::mpsc::{Sender, channel};
 use crate::synth::Command;
-use std::thread::sleep;
 use std::time::Duration;
-use std::ops::Div;
-use std::ffi::FromBytesWithNulError;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket, OscType};
 use crate::{OSC_ADDRESS_CLIENT, OSC_ADDRESS_SERVER};
@@ -86,18 +83,6 @@ impl UIServer {
         lua.context(|lua_ctx| {
             let globals = lua_ctx.globals();
 
-            globals.set("string_var", "hello");
-            globals.set("int_var", 42);
-
-            let check_equal =
-                lua_ctx.create_function(|_, (list1, list2): (Vec<String>, Vec<String>)| {
-                    // This function just checks whether two string lists are equal, and in an inefficient way.
-                    // Lua callbacks return `rlua::Result`, an Ok value is a normal return, and an Err return
-                    // turns into a Lua 'error'.  Again, any type that is convertible to Lua may be returned.
-                    Ok(list1 == list2)
-                }).unwrap();
-            globals.set("check_equal", check_equal);
-
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
             let interpreter = Interpreter::new(self.osc_address_server);
 
@@ -114,7 +99,7 @@ impl UIServer {
 
                 Ok(())
             }) {
-                Ok(function) => {globals.set("play", function);},
+                Ok(function) => { globals.set("play", function); },
                 Err(e) => println!("Error loading function play {}", e.to_string())
             }
         });
@@ -128,11 +113,14 @@ impl UIServer {
                         Ok(message) => {
                             println!("Received instruction:\n{}", message);
                             lua.context(|context| {
-                                context
+                                match context
                                     .load(message)
                                     .set_name("example code")
                                     .unwrap()
-                                    .exec();
+                                    .exec() {
+                                    Ok(_) => {},
+                                    Err(e) => println!("Error evaluating code: {}", e.to_string())
+                                }
                             });
                         },
                         Err(e) => println!("Code chunk is not a string: {}", e)
@@ -144,9 +132,4 @@ impl UIServer {
             }
         }
     }
-}
-
-fn wait(millis: i64) {
-    println!("wait {}", millis);
-    sleep(Duration::from_millis(millis as u64));
 }
