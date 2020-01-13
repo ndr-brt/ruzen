@@ -1,11 +1,9 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
-use crate::clock::{Hz, Clock};
-use crate::instrument::{snare, kick, Instrument, strange, catta, ContinuousInstrument, sine};
+use crate::clock::{Hz};
+use crate::instrument::{snare, kick, Instrument, strange, catta, sine};
 use std::collections::HashMap;
-use std::net::UdpSocket;
 use rosc::{OscPacket, OscType};
-use crate::OSC_ADDRESS_SERVER;
 
 pub type Parameters = HashMap<String, OscType>;
 

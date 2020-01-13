@@ -3,7 +3,6 @@ use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
 use std::ops::Mul;
-use rand::{thread_rng, Rng};
 use crate::synth::Parameters;
 
 pub trait Instrument {

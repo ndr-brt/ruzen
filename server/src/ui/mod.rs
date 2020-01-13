@@ -3,15 +3,12 @@ extern crate rosc;
 
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
-use std::{str, thread};
-use std::time::Duration;
-use rosc::encoder;
+use std::{str};
 use rosc::{OscMessage, OscPacket, OscType};
-use crate::{OSC_ADDRESS_CLIENT, OSC_ADDRESS_SERVER};
-use rlua::{Function, Lua, MetaMethod, Result, UserData, UserDataMethods, Variadic};
+use crate::{OSC_ADDRESS_CLIENT};
+use rlua::{Lua, Result};
 use std::fs::File;
 use std::io::Read;
-use std::error::Error;
 use self::rlua::ExternalError;
 use crate::ui::interpreter::Interpreter;
 use std::collections::HashMap;
