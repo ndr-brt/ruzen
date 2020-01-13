@@ -103,10 +103,17 @@ pub(crate) fn sine(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> 
         None => 440.
     };
 
+    let phase = match params.get("phase") {
+        Some(val) => val.to_owned().double().unwrap(),
+        None => 0.
+    };
+
     Box::new(ContinuousInstrument {
         clock: Clock::new(sample_rate),
         signal: Box::new(
-            Generator::sine().frequency(UGen::from(freq))
+            Generator::sine()
+                .frequency(UGen::from(freq))
+                .phase(UGen::from(phase))
         )
     })
 }
