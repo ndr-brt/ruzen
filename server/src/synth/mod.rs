@@ -84,7 +84,8 @@ impl State {
     }
 
     pub fn instrument(&mut self, id: String, name: String, params: Parameters) {
-        println!("Play new instrument: {}. params: {:?}", name, params);
+//        println!("Play new instrument: {}. params: {}", name, params); TODO: make it print those params
+        println!("Play new instrument: {}. params: {}", name, params.len());
         match self.definitions.get(name.as_str()) {
             Some(function) => { self.instruments.insert(id, function(self.sample_rate, params)); },
             None => println!("Instrument {} not known", name)

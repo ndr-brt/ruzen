@@ -1,17 +1,21 @@
 use std::ops::{Add, Mul};
+use std::fmt::Display;
+use failure::_core::fmt::{Formatter, Error};
 
 pub mod generator;
 pub mod envelope;
 
-pub trait ValueAt {
+pub trait ValueAt { // TODO: add display trait
     fn value_at(&self, clock: f64) -> f64;
 }
 
+#[derive(Copy, Clone)]
 pub struct UGen<T> where T: ValueAt {
     signal: T,
     range: Range,
 }
 
+#[derive(Copy, Clone)]
 pub struct Range {
     low: f64,
     high: f64,
@@ -95,6 +99,12 @@ impl From<f64> for UGen<f64> {
             signal: value,
             range: Range { low: value, high: value}
         }
+    }
+}
+
+impl Display for UGen<f64> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{}", self.signal)
     }
 }
 
