@@ -98,21 +98,21 @@ pub(crate) fn catta(sample_rate: f64, params: Parameters) -> Box<dyn Instrument>
 
 pub(crate) fn sine(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
     let freq = match params.get("freq") {
-        Some(val) => val.to_owned().double().unwrap(),
-        None => 440.
+        Some(val) => UGen::from(val.to_owned().double().unwrap()),
+        None => UGen::from(440.)
     };
 
     let phase = match params.get("phase") {
-        Some(val) => val.to_owned().double().unwrap(),
-        None => 0.
+        Some(val) => UGen::from(val.to_owned().double().unwrap()),
+        None => UGen::from(0.)
     };
 
     Box::new(ContinuousInstrument {
         clock: Clock::new(sample_rate),
         signal: Box::new(
             Generator::sine()
-                .frequency(UGen::from(freq))
-                .phase(UGen::from(phase))
+                .frequency(freq)
+                .phase(phase)
         )
     })
 }
