@@ -83,21 +83,17 @@ impl<T: 'static, O: 'static> Mul<UGen<O>> for UGen<T> where T: ValueAt, O: Value
     }
 }
 
-pub struct Constant<T> {
-    value: T,
-}
-
-impl ValueAt for Constant<f64> {
-    fn value_at(&self, _clock: f64) -> f64 {
-        self.value
+impl ValueAt for f64 {
+    fn value_at(&self, clock: f64) -> f64 {
+        *self
     }
 }
 
-impl From<f64> for UGen<Constant<f64>> {
+impl From<f64> for UGen<f64> {
     fn from(value: f64) -> Self {
         UGen {
-            signal: Constant { value },
-            range: Range { low: value, high: value }
+            signal: value,
+            range: Range { low: value, high: value}
         }
     }
 }

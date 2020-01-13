@@ -50,7 +50,7 @@ pub(crate) fn kick(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> 
         signal: {
             Box::new(Generator::sine()
                 .frequency(Envelope::ar(0.0001, 1.5, -200.).range(45., 845.))
-                .phase(UGen::from(1.))
+                .phase(UGen::from(1.0))
                 * Envelope::line(1., 0., 1.)
             )
         },
