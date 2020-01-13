@@ -4,6 +4,7 @@ use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
 use std::ops::Mul;
 use rand::{thread_rng, Rng};
+use crate::synth::Parameters;
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;
@@ -43,7 +44,7 @@ impl Instrument for ContinuousInstrument {
     }
 }
 
-pub(crate) fn kick(sample_rate: f64) -> Box<dyn Instrument> {
+pub(crate) fn kick(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0001, 0.09, -4.)),
@@ -57,7 +58,7 @@ pub(crate) fn kick(sample_rate: f64) -> Box<dyn Instrument> {
     })
 }
 
-pub(crate) fn snare(sample_rate: f64) -> Box<dyn Instrument> {
+pub(crate) fn snare(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0005, 0.2, -4.)),
@@ -69,7 +70,7 @@ pub(crate) fn snare(sample_rate: f64) -> Box<dyn Instrument> {
     })
 }
 
-pub(crate) fn strange(sample_rate: f64) -> Box<dyn Instrument> {
+pub(crate) fn strange(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.1, 1.2, 4.)),
@@ -80,7 +81,7 @@ pub(crate) fn strange(sample_rate: f64) -> Box<dyn Instrument> {
     })
 }
 
-pub(crate) fn catta(sample_rate: f64) -> Box<dyn Instrument> {
+pub(crate) fn catta(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(1., 0.2, 0.)),
@@ -96,11 +97,16 @@ pub(crate) fn catta(sample_rate: f64) -> Box<dyn Instrument> {
     })
 }
 
-pub(crate) fn sine(sample_rate: f64) -> Box<dyn Instrument> {
+pub(crate) fn sine(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
+    let freq = match params.get("freq") {
+        Some(val) => val.to_owned().double().unwrap(),
+        None => 440.
+    };
+
     Box::new(ContinuousInstrument {
         clock: Clock::new(sample_rate),
         signal: Box::new(
-            Generator::sine().frequency(UGen::from(thread_rng().gen_range(110., 880.)))
+            Generator::sine().frequency(UGen::from(freq))
         )
     })
 }

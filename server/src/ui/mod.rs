@@ -14,6 +14,7 @@ use std::io::Read;
 use std::error::Error;
 use self::rlua::ExternalError;
 use crate::ui::interpreter::Interpreter;
+use std::collections::HashMap;
 
 mod interpreter;
 
@@ -33,18 +34,14 @@ impl UIServer {
         }
     }
 
-    pub fn listen(&self) {
+    pub fn listen(&self) -> Result<()> {
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
 
         let lua = Lua::new();
         lua.context(|lua_ctx| {
-            match read_file("src/ui/ui.lua".to_string()) {
-                Ok(script) => {
-                    lua_ctx.load(&script).exec();
-                },
-                Err(e) => println!("{}", e.to_string())
-            }
+            let script: String = read_file("src/ui/ui.lua".to_string())?;
+            lua_ctx.load(&script).exec()?;
 
             let globals = lua_ctx.globals();
 
@@ -52,19 +49,29 @@ impl UIServer {
             let interpreter = Interpreter::new(self.osc_address_server);
 
             let sender_clone2 = interpreter.sender();
-            match lua_ctx.create_function(move |_, (id, name): (String, String)| {
+            let fun = lua_ctx.create_function(move |_, (id, name, params): (String, String, HashMap::<String, String>)| {
                 println!("Instrument: {}", name);
+                println!("Parames: {:?}", params);
+                let mut osc_params = Vec::new();
+                for x in params {
+                    osc_params.push(OscType::String(x.0));
+                    osc_params.push(OscType::String(x.1));
+                }
                 sender_clone2.send(OscPacket::Message(OscMessage {
                     addr: format!("/instrument/{}/{}", name, id),
-                    args: vec![],
+                    args: osc_params,
                 }));
 
                 Ok(id)
-            }) {
-                Ok(function) => { globals.set("inst", function); },
-                Err(e) => println!("Error loading function inst {}", e.to_string())
-            }
-        });
+            })?;
+            globals.set("inst", fun)?;
+//            {
+//                Ok(function) => { globals.set("inst", function); },
+//                Err(e) => println!("Error loading function inst {}", e.to_string())
+//            }
+
+            Ok(())
+        })?;
 
         let mut buf = [0u8; rosc::decoder::MTU];
 

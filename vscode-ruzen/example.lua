@@ -20,12 +20,12 @@ function start()
 end
 
 for i=1,32 do 
-    inst("aaa", "sine")
-    inst("bbb", "kick")
+    inst("aaa", "sine", {})
+    inst("bbb", "kick", {})
     sleep(0.1)
 end
 
-inst("bbb", "kick")
+inst("bbb", "kick", {})
 
 start()
 
