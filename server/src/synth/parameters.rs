@@ -1,9 +1,14 @@
 use std::collections::HashMap;
 use rosc::OscType;
+use crate::ugen::{UGen, ValueAt, Constant};
 
 #[derive(Debug)]
 pub struct Parameters {
     data: HashMap<String, OscType>
+}
+
+pub trait GetParameter {
+    fn get(&self, key: &str, default: UGen<Constant<f64>>) -> UGen<Constant<f64>>;
 }
 
 impl From<Vec<OscType>> for Parameters {
@@ -27,9 +32,13 @@ impl From<Vec<OscType>> for Parameters {
     }
 }
 
-impl Parameters {
-    pub fn get(&self, key: &str) -> Option<&OscType> {
-        self.data.get(key)
+impl GetParameter for Parameters {
+    fn get(&self, key: &str, default: UGen<Constant<f64>>) -> UGen<Constant<f64>> {
+        match self.data.get(key) {
+            Some(val) => UGen::from(val.to_owned().double().unwrap()),
+            None => default
+        }
     }
-
 }
+
+// TODO: si può implementare valueAt per f64?

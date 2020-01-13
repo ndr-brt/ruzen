@@ -3,7 +3,7 @@ use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
 use std::ops::Mul;
-use crate::synth::parameters::Parameters;
+use crate::synth::parameters::{Parameters, GetParameter};
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;
@@ -97,22 +97,12 @@ pub(crate) fn catta(sample_rate: f64, params: Parameters) -> Box<dyn Instrument>
 }
 
 pub(crate) fn sine(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
-    let freq = match params.get("freq") {
-        Some(val) => UGen::from(val.to_owned().double().unwrap()),
-        None => UGen::from(440.)
-    };
-
-    let phase = match params.get("phase") {
-        Some(val) => UGen::from(val.to_owned().double().unwrap()),
-        None => UGen::from(0.)
-    };
-
     Box::new(ContinuousInstrument {
         clock: Clock::new(sample_rate),
         signal: Box::new(
             Generator::sine()
-                .frequency(freq)
-                .phase(phase)
+                .frequency(params.get("freq", UGen::from(440.)))
+                .phase(params.get("phase", UGen::from(0.)))
         )
     })
 }
