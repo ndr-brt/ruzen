@@ -7,14 +7,14 @@ pub trait Envelope: ValueAt {
 impl dyn Envelope {
     pub fn ar(attack: f64, release: f64, curve: f64) -> UGen<AR> {
         UGen {
-            parameters: AR { attack, release, curve },
+            signal: AR { attack, release, curve },
             range: Range { low: 0., high: 1. }
         }
     }
 
     pub fn line(start: f64, end: f64, duration: f64) -> UGen<Line> {
         UGen {
-            parameters: Line { start, end, duration },
+            signal: Line { start, end, duration },
             range: Range { low: start, high: end }
         }
     }
@@ -28,7 +28,7 @@ pub struct AR {
 
 impl Envelope for UGen<AR> {
     fn duration(&self) -> f64 {
-        self.parameters.attack + self.parameters.release
+        self.signal.attack + self.signal.release
     }
 }
 
@@ -54,7 +54,7 @@ pub struct Line {
 
 impl Envelope for UGen<Line> {
     fn duration(&self) -> f64 {
-        self.parameters.duration
+        self.signal.duration
     }
 }
 

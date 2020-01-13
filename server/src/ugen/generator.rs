@@ -9,7 +9,7 @@ pub trait Generator: ValueAt {}
 impl dyn Generator {
     pub fn sine() -> UGen<Sine> {
         UGen {
-            parameters: Sine {
+            signal: Sine {
                 frequency: Box::new(UGen::from(440.)),
                 phase: Box::new(UGen::from(0.))
             },
@@ -19,7 +19,7 @@ impl dyn Generator {
 
     pub fn saw() -> UGen<Saw> {
         UGen {
-            parameters: Saw {
+            signal: Saw {
                 frequency: Box::new(UGen::from(440.)),
                 phase: Box::new(UGen::from(0.))
             },
@@ -29,7 +29,7 @@ impl dyn Generator {
 
     pub fn pulse() -> UGen<Pulse> {
         UGen {
-            parameters: Pulse {
+            signal: Pulse {
                 frequency: Box::new(UGen::from(440.)),
                 phase: Box::new(UGen::from(0.)),
                 width: Box::new(UGen::from(0.5)),
@@ -40,7 +40,7 @@ impl dyn Generator {
 
     pub fn white_noise() -> UGen<WhiteNoise> {
         UGen {
-            parameters: WhiteNoise { },
+            signal: WhiteNoise { },
             range: GENERATOR_RANGE,
         }
     }
@@ -61,9 +61,9 @@ impl UGen<Sine> {
 
     pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
-            parameters: Sine {
+            signal: Sine {
                 frequency: Box::new(frequency),
-                ..self.parameters
+                ..self.signal
             },
             ..self
         }
@@ -71,9 +71,9 @@ impl UGen<Sine> {
 
     pub fn phase<T>(self, phase: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
-            parameters: Sine {
+            signal: Sine {
                 phase: Box::new(phase),
-                ..self.parameters
+                ..self.signal
             },
             ..self
         }
@@ -94,9 +94,9 @@ impl ValueAt for Saw {
 impl UGen<Saw> {
     pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
-            parameters: Saw {
+            signal: Saw {
                 frequency: Box::new(frequency),
-                ..self.parameters
+                ..self.signal
             },
             ..self
         }
@@ -119,9 +119,9 @@ impl UGen<Pulse> {
     // TODO: there's a way to remove this code to make this simpler?
     pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
-            parameters: Pulse {
+            signal: Pulse {
                 frequency: Box::new(frequency),
-                ..self.parameters
+                ..self.signal
             },
             ..self
         }
@@ -129,9 +129,9 @@ impl UGen<Pulse> {
 
     pub fn width<T>(self, width: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
-            parameters: Pulse {
+            signal: Pulse {
                 width: Box::new(width),
-                ..self.parameters
+                ..self.signal
             },
             ..self
         }

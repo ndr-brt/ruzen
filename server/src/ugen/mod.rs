@@ -8,7 +8,7 @@ pub trait ValueAt {
 }
 
 pub struct UGen<T> where T: ValueAt {
-    parameters: T,
+    signal: T,
     range: Range,
 }
 
@@ -35,7 +35,7 @@ pub trait SignalRange<T> where T: ValueAt {
 
 impl<T> ValueAt for UGen<T> where T: ValueAt {
     fn value_at(&self, clock: f64) -> f64 {
-        self.parameters.value_at(clock)
+        self.signal.value_at(clock)
     }
 }
 
@@ -66,7 +66,7 @@ impl<T: 'static, O: 'static> Add<UGen<O>> for UGen<T> where T: ValueAt, O: Value
 
     fn add(self, other: UGen<O>) -> Self::Output {
         UGen {
-            parameters: Summed { first: self, second: other },
+            signal: Summed { first: self, second: other },
             range: Range { low: -1., high: 1.} // TODO: not correct!
         }
     }
@@ -77,7 +77,7 @@ impl<T: 'static, O: 'static> Mul<UGen<O>> for UGen<T> where T: ValueAt, O: Value
 
     fn mul(self, other: UGen<O>) -> Self::Output {
         UGen {
-            parameters: Multiplied { first: self, second: other },
+            signal: Multiplied { first: self, second: other },
             range: Range { low: -1., high: 1.} // TODO: not correct!
         }
     }
@@ -96,7 +96,7 @@ impl ValueAt for Constant<f64> {
 impl From<f64> for UGen<Constant<f64>> {
     fn from(value: f64) -> Self {
         UGen {
-            parameters: Constant { value },
+            signal: Constant { value },
             range: Range { low: value, high: value }
         }
     }
@@ -112,7 +112,7 @@ impl<T: 'static> SignalRange<UGen<T>> for UGen<T> where T: ValueAt {
 
     fn range(self, low: f64, high: f64) -> Self::Output {
         UGen {
-            parameters: Ranged { signal: self, range: Range { low, high } },
+            signal: Ranged { signal: self, range: Range { low, high } },
             range: Range { low, high },
         }
     }
