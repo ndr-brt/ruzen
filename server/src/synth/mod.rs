@@ -4,8 +4,9 @@ use crate::clock::{Hz};
 use crate::instrument::{snare, kick, Instrument, strange, catta, sine};
 use std::collections::HashMap;
 use rosc::{OscPacket, OscType};
+use crate::synth::parameters::Parameters;
 
-pub type Parameters = HashMap<String, OscType>;
+pub mod parameters;
 
 pub struct Synth {
     sample_rate: Hz,
@@ -35,26 +36,10 @@ impl Synth {
                                 .map(String::from)
                                 .collect();
 
-                        let param_list: Vec<String> = msg.args.iter()
-                            .map(|t| t.to_owned())
-                            .map(|t| t.string())
-                            .map(|t| t.unwrap())
-                            .collect();
-
-                        // TODO: define a type for parameters
-                        let mut params = HashMap::<String, OscType>::new();
-                        let mut index = 0;
-                        while index < param_list.len() {
-                            let key: String = param_list.get(index).unwrap().clone();
-                            let value = param_list.get(index + 1).unwrap().clone();
-                            params.insert(key, OscType::Double(value.parse::<f64>().unwrap()));
-                            index += 2;
-                        }
-
                         let name = tokens.get(2).unwrap();
                         let id = tokens.last().unwrap();
 
-                        state.instrument(id.to_owned(), name.to_owned(), params);
+                        state.instrument(id.to_owned(), name.to_owned(), Parameters::from(msg.args));
                     }
                     OscPacket::Bundle(bundle) => {
                         println!("OSC Bundle: {:?}", bundle);

@@ -3,7 +3,7 @@ use crate::ugen::{UGen, ValueAt, SignalRange};
 use crate::ugen::envelope::Envelope;
 use crate::ugen::generator::{Generator};
 use std::ops::Mul;
-use crate::synth::Parameters;
+use crate::synth::parameters::Parameters;
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;
