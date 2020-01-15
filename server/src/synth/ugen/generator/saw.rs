@@ -1,5 +1,5 @@
 use crate::synth::ugen::{ValueAt, UGen};
-use crate::synth::ugen::params::Frequency;
+use crate::synth::ugen::params::FrequencyParam;
 
 pub struct Saw {
     frequency: Box<dyn ValueAt>,
@@ -21,7 +21,7 @@ impl ValueAt for Saw {
     }
 }
 
-impl<T> Frequency<T> for Saw where T: 'static + ValueAt {
+impl<T> FrequencyParam<T> for Saw where T: 'static + ValueAt {
     fn frequency(self, value: UGen<T>) -> Self {
         Saw {
             frequency: Box::new(value),

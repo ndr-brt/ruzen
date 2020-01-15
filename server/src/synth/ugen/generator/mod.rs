@@ -9,7 +9,7 @@ use self::pulse::Pulse;
 use self::whitenoise::WhiteNoise;
 
 use crate::synth::ugen::{ValueAt, UGen, Range};
-use crate::synth::ugen::params::Frequency;
+use crate::synth::ugen::params::FrequencyParam;
 
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
@@ -45,7 +45,7 @@ impl dyn Generator {
     }
 }
 
-impl<T,O> Frequency<T> for UGen<O> where T: 'static + ValueAt, O: Frequency<T> + ValueAt {
+impl<T,O> FrequencyParam<T> for UGen<O> where T: 'static + ValueAt, O: FrequencyParam<T> + ValueAt {
     fn frequency(self, value: UGen<T>) -> Self {
         UGen {
             signal: self.signal.frequency(value),

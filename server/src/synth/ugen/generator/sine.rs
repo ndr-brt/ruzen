@@ -1,5 +1,5 @@
 use crate::synth::ugen::{ValueAt, UGen};
-use crate::synth::ugen::params::Frequency;
+use crate::synth::ugen::params::FrequencyParam;
 use std::f64::consts::PI;
 
 pub struct Sine {
@@ -22,7 +22,7 @@ impl ValueAt for Sine {
     }
 }
 
-impl<T> Frequency<T> for Sine where T: 'static + ValueAt {
+impl<T> FrequencyParam<T> for Sine where T: 'static + ValueAt {
     fn frequency(self, value: UGen<T>) -> Self {
         Sine {
             frequency: Box::new(value),
