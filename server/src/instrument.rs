@@ -4,6 +4,7 @@ use crate::synth::parameters::{Parameters, GetParameter};
 use crate::synth::ugen::{UGen, ValueAt, SignalRange};
 use crate::synth::ugen::envelope::Envelope;
 use crate::synth::ugen::generator::Generator;
+use crate::synth::ugen::params::*;
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;

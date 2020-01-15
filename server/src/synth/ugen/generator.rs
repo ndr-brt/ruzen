@@ -1,6 +1,7 @@
 use crate::rand::Rng;
 use std::f64::consts::PI;
 use crate::synth::ugen::{ValueAt, UGen, Range};
+use crate::synth::ugen::params::Frequency;
 
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
@@ -57,17 +58,25 @@ impl ValueAt for Sine {
     }
 }
 
-impl UGen<Sine> {
-
-    pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
-        UGen {
-            signal: Sine {
-                frequency: Box::new(frequency),
-                ..self.signal
-            },
+impl<T> Frequency<T> for Sine where T: 'static + ValueAt {
+    fn frequency(self, value: UGen<T>) -> Self {
+        Sine {
+            frequency: Box::new(value),
             ..self
         }
     }
+}
+
+impl<T,O> Frequency<T> for UGen<O> where T: 'static + ValueAt, O: Frequency<T> + ValueAt {
+    fn frequency(self, value: UGen<T>) -> Self {
+        UGen {
+            signal: self.signal.frequency(value),
+            ..self
+        }
+    }
+}
+
+impl UGen<Sine> {
 
     pub fn phase<T>(self, phase: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
@@ -91,13 +100,10 @@ impl ValueAt for Saw {
     }
 }
 
-impl UGen<Saw> {
-    pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
-        UGen {
-            signal: Saw {
-                frequency: Box::new(frequency),
-                ..self.signal
-            },
+impl<T> Frequency<T> for Saw where T: 'static + ValueAt {
+    fn frequency(self, value: UGen<T>) -> Self {
+        Saw {
+            frequency: Box::new(value),
             ..self
         }
     }
@@ -115,18 +121,16 @@ impl ValueAt for Pulse {
     }
 }
 
-impl UGen<Pulse> {
-    // TODO: there's a way to remove this code to make this simpler?
-    pub fn frequency<T>(self, frequency: UGen<T>) -> Self where T: 'static + ValueAt {
-        UGen {
-            signal: Pulse {
-                frequency: Box::new(frequency),
-                ..self.signal
-            },
+impl<T> Frequency<T> for Pulse where T: 'static + ValueAt {
+    fn frequency(self, value: UGen<T>) -> Self {
+        Pulse {
+            frequency: Box::new(value),
             ..self
         }
     }
+}
 
+impl UGen<Pulse> {
     pub fn width<T>(self, width: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
             signal: Pulse {
@@ -152,6 +156,7 @@ mod tests {
     use crate::ugen::{ValueAt, UGen};
     use crate::ugen::generator::{Generator};
     use assert_approx_eq::assert_approx_eq;
+    use crate::synth::ugen::UGen;
 
     #[test]
     fn sine() {
