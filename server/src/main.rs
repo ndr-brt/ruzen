@@ -51,5 +51,8 @@ fn main() {
     });
 
     let ui_server = UIServer::new(UI_ADDRESS_IN, OSC_ADDRESS_SERVER);
-    ui_server.listen();
+    match ui_server.listen() {
+        Ok(_) => println!("UI server is listening on {}", UI_ADDRESS_IN),
+        Err(e) => println!("Error initializing UI server: {}", e.to_string())
+    }
 }

@@ -44,7 +44,7 @@ impl Instrument for ContinuousInstrument {
     }
 }
 
-pub(crate) fn kick(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
+pub(crate) fn kick(sample_rate: f64, _params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0001, 0.09, -4.)),
@@ -58,7 +58,7 @@ pub(crate) fn kick(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> 
     })
 }
 
-pub(crate) fn snare(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
+pub(crate) fn snare(sample_rate: f64, _params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.0005, 0.2, -4.)),
@@ -70,7 +70,7 @@ pub(crate) fn snare(sample_rate: f64, params: Parameters) -> Box<dyn Instrument>
     })
 }
 
-pub(crate) fn strange(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
+pub(crate) fn strange(sample_rate: f64, _params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(0.1, 1.2, 4.)),
@@ -81,7 +81,7 @@ pub(crate) fn strange(sample_rate: f64, params: Parameters) -> Box<dyn Instrumen
     })
 }
 
-pub(crate) fn catta(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
+pub(crate) fn catta(sample_rate: f64, _params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
         envelope: Box::new(Envelope::ar(1., 0.2, 0.)),

@@ -1,9 +1,8 @@
 use std::sync::mpsc::{Receiver, SyncSender};
 
 use crate::clock::{Hz};
-use crate::instrument::{snare, kick, Instrument, strange, catta, sine};
-use std::collections::HashMap;
-use rosc::{OscPacket, OscType};
+use crate::instrument::{snare, kick, strange, catta, sine};
+use rosc::{OscPacket};
 use crate::synth::parameters::Parameters;
 use crate::synth::state::State;
 

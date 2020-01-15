@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use rosc::OscType;
-use crate::synth::ugen::{UGen, ValueAt};
-use std::fmt::Display;
-use failure::_core::fmt::{Formatter, Error};
+use crate::synth::ugen::{UGen};
 
 #[derive(Debug)]
 pub struct Parameters {
@@ -11,12 +9,6 @@ pub struct Parameters {
 
 pub trait GetParameter {
     fn get(&self, key: &str, default: UGen<f64>) -> UGen<f64>;
-}
-
-impl Parameters {
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
 }
 
 impl From<Vec<OscType>> for Parameters {

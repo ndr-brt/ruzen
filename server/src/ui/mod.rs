@@ -42,7 +42,7 @@ impl UIServer {
 
             let globals = lua_ctx.globals();
 
-            let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
+            let _socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
             let interpreter = Interpreter::new(self.osc_address_server);
 
             let sender_clone2 = interpreter.sender();
@@ -111,7 +111,7 @@ fn read_file(path: String) -> Result<String> {
     let mut script = String::new();
 
     match script_file.read_to_string(&mut script) {
-        Ok(size) => Ok(script),
+        Ok(_size) => Ok(script),
         Err(e) => Err(e.to_lua_err())
     }
 }

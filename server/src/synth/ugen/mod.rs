@@ -89,7 +89,7 @@ impl<T: 'static, O: 'static> Mul<UGen<O>> for UGen<T> where T: ValueAt, O: Value
 }
 
 impl ValueAt for f64 {
-    fn value_at(&self, clock: f64) -> f64 {
+    fn value_at(&self, _clock: f64) -> f64 {
         *self
     }
 }

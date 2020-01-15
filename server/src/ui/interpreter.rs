@@ -16,7 +16,6 @@ impl Interpreter {
 
         thread::spawn(move || {
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
-            let mut buf = [0u8; rosc::decoder::MTU];
 
             loop {
                 match osc_stream.recv() {
