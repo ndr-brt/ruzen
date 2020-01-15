@@ -1,9 +1,9 @@
 use crate::clock::{Clock};
-use crate::ugen::{UGen, ValueAt, SignalRange};
-use crate::ugen::envelope::Envelope;
-use crate::ugen::generator::{Generator};
 use std::ops::Mul;
 use crate::synth::parameters::{Parameters, GetParameter};
+use crate::synth::ugen::{UGen, ValueAt, SignalRange};
+use crate::synth::ugen::envelope::Envelope;
+use crate::synth::ugen::generator::Generator;
 
 pub trait Instrument {
     fn signal(&mut self) -> f64;

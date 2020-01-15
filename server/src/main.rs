@@ -16,7 +16,6 @@ mod out;
 mod plot;
 mod instrument;
 mod synth;
-mod ugen;
 mod ui;
 
 const OSC_ADDRESS_SERVER: &str = "127.0.0.1:38041";

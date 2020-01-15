@@ -8,6 +8,7 @@ use crate::synth::parameters::Parameters;
 use crate::synth::state::State;
 
 pub mod parameters;
+pub mod ugen;
 mod state;
 
 pub struct Synth {

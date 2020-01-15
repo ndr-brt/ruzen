@@ -1,4 +1,4 @@
-use crate::ugen::{UGen, ValueAt, Range};
+use crate::synth::ugen::{UGen, ValueAt, Range};
 
 pub trait Envelope: ValueAt {
     fn duration(&self) -> f64;

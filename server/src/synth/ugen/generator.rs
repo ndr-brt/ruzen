@@ -1,6 +1,6 @@
 use crate::rand::Rng;
 use std::f64::consts::PI;
-use crate::ugen::{ValueAt, UGen, Range};
+use crate::synth::ugen::{ValueAt, UGen, Range};
 
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 

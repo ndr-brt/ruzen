@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use rosc::OscType;
-use crate::ugen::{UGen, ValueAt};
+use crate::synth::ugen::{UGen, ValueAt};
 use std::fmt::Display;
 use failure::_core::fmt::{Formatter, Error};
 
 #[derive(Debug)]
-pub struct Parameters { // TODO: impl display
+pub struct Parameters {
     data: HashMap<String, UGen<f64>>
 }
 
