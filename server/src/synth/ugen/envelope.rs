@@ -67,8 +67,8 @@ impl ValueAt for Line {
 
 #[cfg(test)]
 mod tests {
-    use crate::ugen::{ValueAt };
-    use crate::ugen::envelope::Envelope;
+    use crate::synth::ugen::{ValueAt };
+    use crate::synth::ugen::envelope::Envelope;
 
     #[test]
     fn ar_envelope() {

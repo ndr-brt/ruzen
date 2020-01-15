@@ -1,5 +1,5 @@
 use crate::synth::ugen::{ValueAt, UGen};
-use crate::synth::ugen::params::{FrequencyParam, WidthParam};
+use crate::synth::ugen::params::{FrequencyParam, WidthParam, PhaseParam};
 
 pub struct Pulse {
     frequency: Box<dyn ValueAt>,
@@ -27,6 +27,15 @@ impl<T> FrequencyParam<T> for Pulse where T: 'static + ValueAt {
     fn frequency(self, value: UGen<T>) -> Self {
         Pulse {
             frequency: Box::new(value),
+            ..self
+        }
+    }
+}
+
+impl<T> PhaseParam<T> for Pulse where T: 'static + ValueAt {
+    fn phase(self, value: UGen<T>) -> Self {
+        Pulse {
+            phase: Box::new(value),
             ..self
         }
     }

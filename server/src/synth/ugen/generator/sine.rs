@@ -1,5 +1,5 @@
 use crate::synth::ugen::{ValueAt, UGen};
-use crate::synth::ugen::params::FrequencyParam;
+use crate::synth::ugen::params::{FrequencyParam, PhaseParam};
 use std::f64::consts::PI;
 
 pub struct Sine {
@@ -31,14 +31,10 @@ impl<T> FrequencyParam<T> for Sine where T: 'static + ValueAt {
     }
 }
 
-impl UGen<Sine> {
-
-    pub fn phase<T>(self, phase: UGen<T>) -> Self where T: 'static + ValueAt {
-        UGen {
-            signal: Sine {
-                phase: Box::new(phase),
-                ..self.signal
-            },
+impl<T> PhaseParam<T> for Sine where T: 'static + ValueAt {
+    fn phase(self, value: UGen<T>) -> Self {
+        Sine {
+            phase: Box::new(value),
             ..self
         }
     }
