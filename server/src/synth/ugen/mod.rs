@@ -5,6 +5,7 @@ use failure::_core::fmt::{Formatter, Error};
 pub mod generator;
 pub mod envelope;
 pub mod params;
+pub mod generators;
 
 pub trait ValueAt {
     fn value_at(&self, clock: f64) -> f64;
