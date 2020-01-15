@@ -1,11 +1,15 @@
-use crate::rand::Rng;
-use std::f64::consts::PI;
+pub mod pulse;
+pub mod saw;
+pub mod sine;
+pub mod whitenoise;
+
+use self::sine::Sine;
+use self::saw::Saw;
+use self::pulse::Pulse;
+use self::whitenoise::WhiteNoise;
+
 use crate::synth::ugen::{ValueAt, UGen, Range};
 use crate::synth::ugen::params::Frequency;
-use crate::synth::ugen::generators::sine::Sine;
-use crate::synth::ugen::generators::saw::Saw;
-use crate::synth::ugen::generators::pulse::Pulse;
-use crate::synth::ugen::generators::whitenoise::WhiteNoise;
 
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 

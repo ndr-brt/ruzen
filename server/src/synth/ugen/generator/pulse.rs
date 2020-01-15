@@ -32,7 +32,7 @@ impl<T> Frequency<T> for Pulse where T: 'static + ValueAt {
     }
 }
 
-impl UGen<Pulse> {
+impl UGen<Pulse> { // TODO: introduce width param trait
     pub fn width<T>(self, width: UGen<T>) -> Self where T: 'static + ValueAt {
         UGen {
             signal: Pulse {
