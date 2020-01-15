@@ -9,7 +9,7 @@ use self::pulse::Pulse;
 use self::whitenoise::WhiteNoise;
 
 use crate::synth::ugen::{ValueAt, UGen, Range};
-use crate::synth::ugen::params::FrequencyParam;
+use crate::synth::ugen::params::{FrequencyParam, WidthParam};
 
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
@@ -49,6 +49,15 @@ impl<T,O> FrequencyParam<T> for UGen<O> where T: 'static + ValueAt, O: Frequency
     fn frequency(self, value: UGen<T>) -> Self {
         UGen {
             signal: self.signal.frequency(value),
+            ..self
+        }
+    }
+}
+
+impl<T,O> WidthParam<T> for UGen<O> where T: 'static + ValueAt, O: WidthParam<T> + ValueAt {
+    fn width(self, value: UGen<T>) -> Self {
+        UGen {
+            signal: self.signal.width(value),
             ..self
         }
     }

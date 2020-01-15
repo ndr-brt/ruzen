@@ -1,5 +1,5 @@
 use crate::synth::ugen::{ValueAt, UGen};
-use crate::synth::ugen::params::FrequencyParam;
+use crate::synth::ugen::params::{FrequencyParam, WidthParam};
 
 pub struct Pulse {
     frequency: Box<dyn ValueAt>,
@@ -32,13 +32,10 @@ impl<T> FrequencyParam<T> for Pulse where T: 'static + ValueAt {
     }
 }
 
-impl UGen<Pulse> { // TODO: introduce width param trait
-    pub fn width<T>(self, width: UGen<T>) -> Self where T: 'static + ValueAt {
-        UGen {
-            signal: Pulse {
-                width: Box::new(width),
-                ..self.signal
-            },
+impl<T> WidthParam<T> for Pulse where T: 'static + ValueAt {
+    fn width(self, value: UGen<T>) -> Self {
+        Pulse {
+            width: Box::new(value),
             ..self
         }
     }
