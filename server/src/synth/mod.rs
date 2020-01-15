@@ -36,10 +36,17 @@ impl Synth {
                                 .map(String::from)
                                 .collect();
 
-                        let name = tokens.get(2).unwrap();
-                        let id = tokens.last().unwrap();
+                        match tokens.get(1).map(|s| s.as_str()) {
+                            Some("hush") => state.hush(),
+                            Some("instrument") => {
+                                let name = tokens.get(2).unwrap();
+                                let id = tokens.last().unwrap();
+                                state.instrument(id.to_owned(), name.to_owned(), Parameters::from(msg.args));
+                            }
+                            any => { println!("OSC command {} not known", any.unwrap()) }
+                        }
 
-                        state.instrument(id.to_owned(), name.to_owned(), Parameters::from(msg.args));
+
                     }
                     OscPacket::Bundle(bundle) => {
                         println!("OSC Bundle: {:?}", bundle);
@@ -90,5 +97,9 @@ impl State {
             Some(function) => { self.instruments.insert(id, function(self.sample_rate, params)); },
             None => println!("Instrument {} not known", name)
         }
+    }
+
+    pub fn hush(&mut self) {
+        self.instruments.retain(|_, _| false);
     }
 }

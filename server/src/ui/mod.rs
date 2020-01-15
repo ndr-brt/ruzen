@@ -62,10 +62,16 @@ impl UIServer {
                 Ok(id)
             })?;
             globals.set("inst", fun)?;
-//            {
-//                Ok(function) => { globals.set("inst", function); },
-//                Err(e) => println!("Error loading function inst {}", e.to_string())
-//            }
+
+            let sender_clone3 = interpreter.sender();
+            globals.set("hush", lua_ctx.create_function(move |_, ()| {
+                sender_clone3.send(OscPacket::Message(OscMessage {
+                    addr: format!("/hush"),
+                    args: vec![]
+                }));
+
+                Ok(())
+            })?)?;
 
             Ok(())
         })?;
