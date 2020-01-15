@@ -5,17 +5,17 @@ use failure::_core::fmt::{Formatter, Error};
 pub mod generator;
 pub mod envelope;
 
-pub trait ValueAt { // TODO: add display trait
+pub trait ValueAt {
     fn value_at(&self, clock: f64) -> f64;
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct UGen<T> where T: ValueAt {
     signal: T,
     range: Range,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Range {
     low: f64,
     high: f64,

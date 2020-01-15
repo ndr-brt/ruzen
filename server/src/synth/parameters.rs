@@ -4,6 +4,7 @@ use crate::ugen::{UGen, ValueAt};
 use std::fmt::Display;
 use failure::_core::fmt::{Formatter, Error};
 
+#[derive(Debug)]
 pub struct Parameters { // TODO: impl display
     data: HashMap<String, UGen<f64>>
 }
