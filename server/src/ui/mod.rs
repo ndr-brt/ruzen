@@ -12,7 +12,6 @@ use std::io::Read;
 use self::rlua::ExternalError;
 use crate::ui::interpreter::Interpreter;
 use std::collections::HashMap;
-use crossbeam_channel::unbounded;
 use std::sync::mpsc::channel;
 
 mod interpreter;
@@ -39,7 +38,6 @@ impl UIServer {
 
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
-        // let (code_sink, code_stream) = unbounded();
         let (code_sink, code_stream) = channel::<String>();
 
         thread::spawn(move || {
