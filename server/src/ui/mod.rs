@@ -39,7 +39,8 @@ impl UIServer {
 
         let code_sock = UdpSocket::bind(self.address).unwrap();
         println!("UI server listening on {}", self.address);
-        let (code_sink, code_stream) = unbounded();
+        // let (code_sink, code_stream) = unbounded();
+        let (code_sink, code_stream) = channel::<String>();
 
         thread::spawn(move || {
             loop {
