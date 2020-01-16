@@ -1,8 +1,8 @@
 extern crate cpal;
 extern crate failure;
 extern crate rand;
-#[macro_use]
-extern crate crossbeam_channel;
+extern crate rlua;
+extern crate rosc;
 
 use std::sync::mpsc::{sync_channel, channel};
 use std::thread;
@@ -53,8 +53,5 @@ fn main() {
     });
 
     let ui_server = UIServer::new(UI_ADDRESS_IN, OSC_ADDRESS_SERVER);
-    match ui_server.listen() {
-        Ok(_) => println!("UI server is listening on {}", UI_ADDRESS_IN),
-        Err(e) => println!("Error initializing UI server: {}", e.to_string())
-    }
+    ui_server.listen();
 }
