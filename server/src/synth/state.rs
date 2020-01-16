@@ -1,7 +1,7 @@
 use crate::clock::Hz;
 use std::collections::HashMap;
 use crate::instrument::Instrument;
-use crate::synth::parameters::Parameters;
+use crate::instrument::parameters::Parameters;
 
 pub struct State {
     sample_rate: Hz,
