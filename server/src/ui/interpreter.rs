@@ -60,12 +60,12 @@ impl Interpreter {
                                 let mut index = 0;
                                 while index < pieces.len() {
                                     pat_sin.send(OscPacket::Message(OscMessage {
-                                        addr: format!("/instrument/{}/anId", pieces[index]),
+                                        addr: format!("/instrument/{}/{}", pieces[index], index),
                                         args: vec![],
                                     }));
 
                                     index += 1;
-                                    sleep(Duration::from_secs_f64((1 / pieces.len()) as f64));
+                                    sleep(Duration::from_secs_f64((1. / (pieces.len() as f64)) as f64));
                                 }
                             });
                         }
@@ -77,7 +77,6 @@ impl Interpreter {
 
         {
             let arc = arc.clone();
-            let pat_osc_sink = osc_sink.clone();
             thread::spawn(move || {
                 loop {
                     match pattern_stream.recv() {
@@ -118,7 +117,6 @@ impl Interpreter {
             });
             globals.set("inst", fun.unwrap());
 
-            let pattern_code_sink = osc_sink.clone();
             globals.set("p", lua_ctx.create_function(move |_, (id, definition): (usize, String)| {
                 pattern_sink.send(Pattern { id, definition });
 
