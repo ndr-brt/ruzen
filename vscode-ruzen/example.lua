@@ -27,7 +27,7 @@ end
 
 inst("bbb", "kick", {})
 
-p(1, "kick snare kick")
+p(1, "kick snare snare kick catta")
 p(2, "snare")
 p(3, "catta")
 

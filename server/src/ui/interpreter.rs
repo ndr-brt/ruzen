@@ -56,11 +56,12 @@ impl Interpreter {
                                 .collect::<Vec<String>>();
 
                             let pat_sin = timer_sink.clone();
+                            let io_dio = id.clone();
                             thread::spawn(move || {
                                 let mut index = 0;
                                 while index < pieces.len() {
                                     pat_sin.send(OscPacket::Message(OscMessage {
-                                        addr: format!("/instrument/{}/{}", pieces[index], index),
+                                        addr: format!("/instrument/{}/{}-{}", pieces[index], io_dio, index),
                                         args: vec![],
                                     }));
 
