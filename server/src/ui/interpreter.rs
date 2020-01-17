@@ -11,9 +11,8 @@ use failure::_core::fmt::Error;
 use failure::_core::ops::Deref;
 use std::thread::sleep;
 use std::ops::Div;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
-
-const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 pub struct Pattern {
     id: usize,
@@ -29,46 +28,69 @@ pub struct Interpreter {
 impl Interpreter {
     pub(crate) fn new(osc_address_out: &'static str) -> Interpreter {
         let lua = Lua::new();
-        let mut patterns: HashMap<usize, String> = HashMap::new();
+        let patterns: HashMap<usize, String> = HashMap::new();
+        let mutex_patterns: Mutex<HashMap<usize, String>> = Mutex::new(patterns);
+        let arc = Arc::new(mutex_patterns);
         let (osc_sink, osc_stream) = unbounded::<OscPacket>();
         let (pattern_sink, pattern_stream) = unbounded::<Pattern>();
-
-        let pat_osc_sink = osc_sink.clone();
+        let (timer_sink, timer_stream) = unbounded::<String>();
         thread::spawn(move || {
             loop {
-                match pattern_stream.recv() {
-                    Ok(pattern) => {
-                        let pieces = pattern.definition.split_whitespace()
-                            .map(String::from)
-                            .collect::<Vec<String>>();
+                sleep(Duration::from_secs(1));
+                timer_sink.send("cacca".to_string());
+            }
+        });
 
-                        let altro_clone = pat_osc_sink.clone();
-                        thread::spawn(move || {
-                            let mut index = 0;
-                            loop {
-                                if pieces.len() == 0 {
-                                    sleep(CYCLE_TIME);
-                                    continue;
+        let barc = arc.clone();
+        let timer_sink = osc_sink.clone();
+        thread::spawn(move || {
+            loop {
+                match timer_stream.recv() {
+                    Ok(time) => {
+                        println!("ah ostia");
+                        let patterns = barc.lock().unwrap();
+                        println!("Ci sono dei pattern? {}", patterns.len());
+                        for (id, definition) in patterns.iter() {
+                            let pieces = definition.split_whitespace()
+                                .map(String::from)
+                                .collect::<Vec<String>>();
+
+                            let pat_sin = timer_sink.clone();
+                            thread::spawn(move || {
+                                let mut index = 0;
+                                while index < pieces.len() {
+                                    pat_sin.send(OscPacket::Message(OscMessage {
+                                        addr: format!("/instrument/{}/anId", pieces[index]),
+                                        args: vec![],
+                                    }));
+
+                                    index += 1;
+                                    sleep(Duration::from_secs_f64((1 / pieces.len()) as f64));
                                 }
-
-                                if index == pieces.len() {
-                                    index = 0;
-                                }
-
-                                altro_clone.send(OscPacket::Message(OscMessage {
-                                    addr: format!("/instrument/{}/anId", pieces[index]),
-                                    args: vec![],
-                                }));
-
-                                sleep(CYCLE_TIME.div(pieces.len() as u32));
-                                index += 1;
-                            }
-                        });
-                    }
-                    Err(e) => {}
+                            });
+                        }
+                    },
+                    Err(e) => { println!("Error receiving time {}", e.to_string()); }
                 }
             }
         });
+
+        {
+            let arc = arc.clone();
+            let pat_osc_sink = osc_sink.clone();
+            thread::spawn(move || {
+                loop {
+                    match pattern_stream.recv() {
+                        Ok(pattern) => {
+                            let mut patterns = arc.lock().unwrap();
+                            patterns.insert(pattern.id, pattern.definition);
+                        }
+                        Err(e) => {}
+                    }
+                }
+            });
+        }
+
 
         let _: Result<(), Error> = lua.context(|lua_ctx| {
             match read_file("src/ui/ui.lua".to_string()) {
