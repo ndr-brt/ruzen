@@ -3,6 +3,8 @@ extern crate failure;
 extern crate rand;
 extern crate rlua;
 extern crate rosc;
+#[macro_use]
+extern crate crossbeam_channel;
 
 use std::sync::mpsc::{sync_channel, channel};
 use std::thread;
