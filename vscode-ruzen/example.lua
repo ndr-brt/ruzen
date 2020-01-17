@@ -27,6 +27,11 @@ end
 
 inst("bbb", "kick", {})
 
+p(1, "kick snare kick")
+p(2, "snare")
+p(3, "catta")
+
+hush()
 start()
 
 for i=1,10 do 

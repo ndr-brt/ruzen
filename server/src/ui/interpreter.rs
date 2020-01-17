@@ -35,7 +35,6 @@ impl Interpreter {
 
         let pat_osc_sink = osc_sink.clone();
         thread::spawn(move || {
-            let altro_clone = pat_osc_sink.clone();
             loop {
                 match pattern_stream.recv() {
                     Ok(pattern) => {
@@ -43,7 +42,7 @@ impl Interpreter {
                             .map(String::from)
                             .collect::<Vec<String>>();
 
-                        let il_dio_can = altro_clone.clone();
+                        let altro_clone = pat_osc_sink.clone();
                         thread::spawn(move || {
                             let mut index = 0;
                             loop {
@@ -56,7 +55,7 @@ impl Interpreter {
                                     index = 0;
                                 }
 
-                                il_dio_can.send(OscPacket::Message(OscMessage {
+                                altro_clone.send(OscPacket::Message(OscMessage {
                                     addr: format!("/instrument/{}/anId", pieces[index]),
                                     args: vec![],
                                 }));
