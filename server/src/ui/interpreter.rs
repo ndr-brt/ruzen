@@ -29,8 +29,8 @@ impl Interpreter {
     pub(crate) fn new(osc_address_out: &'static str) -> Interpreter {
         let lua = Lua::new();
         let patterns: HashMap<usize, String> = HashMap::new();
-        let mutex_patterns: Mutex<HashMap<usize, String>> = Mutex::new(patterns);
-        let arc = Arc::new(mutex_patterns);
+        let patterns_arc = Arc::new(Mutex::new(patterns));
+
         let (osc_sink, osc_stream) = unbounded::<OscPacket>();
         let (pattern_sink, pattern_stream) = unbounded::<Pattern>();
         let (timer_sink, timer_stream) = unbounded::<String>();
@@ -41,54 +41,15 @@ impl Interpreter {
             }
         });
 
-        let barc = arc.clone();
-        let timer_sink = osc_sink.clone();
-        thread::spawn(move || {
-            loop {
-                match timer_stream.recv() {
-                    Ok(time) => {
-                        println!("ah ostia");
-                        let patterns = barc.lock().unwrap();
-                        println!("Ci sono dei pattern? {}", patterns.len());
-                        for (id, definition) in patterns.iter() {
-                            let pieces = definition.split_whitespace()
-                                .map(String::from)
-                                .collect::<Vec<String>>();
-
-                            let pat_sin = timer_sink.clone();
-                            let io_dio = id.clone();
-                            thread::spawn(move || {
-                                let mut index = 0;
-                                while index < pieces.len() {
-                                    pat_sin.send(OscPacket::Message(OscMessage {
-                                        addr: format!("/instrument/{}/{}-{}", pieces[index], io_dio, index),
-                                        args: vec![],
-                                    }));
-
-                                    index += 1;
-                                    sleep(Duration::from_secs_f64((1. / (pieces.len() as f64)) as f64));
-                                }
-                            });
-                        }
-                    },
-                    Err(e) => { println!("Error receiving time {}", e.to_string()); }
-                }
-            }
-        });
+        {
+            let patterns_arc = patterns_arc.clone();
+            let osc_sink = osc_sink.clone();
+            thread::spawn(move || Interpreter::handle_patterns(timer_stream, patterns_arc, osc_sink));
+        }
 
         {
-            let arc = arc.clone();
-            thread::spawn(move || {
-                loop {
-                    match pattern_stream.recv() {
-                        Ok(pattern) => {
-                            let mut patterns = arc.lock().unwrap();
-                            patterns.insert(pattern.id, pattern.definition);
-                        }
-                        Err(e) => {}
-                    }
-                }
-            });
+            let patterns_arc = patterns_arc.clone();
+            thread::spawn(move || Interpreter::listen_pattern_change(pattern_stream, patterns_arc));
         }
 
 
@@ -155,6 +116,49 @@ impl Interpreter {
         });
 
         Interpreter { osc_sink, lua, patterns: HashMap::new() }
+    }
+
+    fn handle_patterns(timer_stream: Receiver<String>, patterns_arc: Arc<Mutex<HashMap<usize, String>>>, osc_sink: Sender<OscPacket>) {
+        loop {
+            match timer_stream.recv() {
+                Ok(time) => {
+                    let patterns = patterns_arc.lock().unwrap();
+                    println!("Ci sono dei pattern? {}", patterns.len());
+                    for (id, definition) in patterns.iter() {
+                        let pieces = definition.split_whitespace()
+                            .map(String::from)
+                            .collect::<Vec<String>>();
+
+                        let pattern_osc_sink = osc_sink.clone();
+                        let io_dio = id.clone();
+                        thread::spawn(move || {
+                            let mut index = 0;
+                            while index < pieces.len() {
+                                pattern_osc_sink.send(OscPacket::Message(OscMessage {
+                                    addr: format!("/instrument/{}/{}-{}", pieces[index], io_dio, index),
+                                    args: vec![],
+                                }));
+
+                                index += 1;
+                                sleep(Duration::from_secs_f64((1. / (pieces.len() as f64)) as f64));
+                            }
+                        });
+                    }
+                },
+                Err(e) => { println!("Error receiving time {}", e.to_string()); }
+            }
+        }
+    }
+
+    fn listen_pattern_change(pattern_stream: Receiver<Pattern>, patterns: Arc<Mutex<HashMap<usize, String>>>) {
+        loop {
+            match pattern_stream.recv() {
+                Ok(pattern) => {
+                    patterns.lock().unwrap().insert(pattern.id, pattern.definition);
+                }
+                Err(e) => {}
+            };
+        }
     }
 
     pub(crate) fn sender(&self) -> Sender<OscPacket> {
