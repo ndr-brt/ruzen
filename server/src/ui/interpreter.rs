@@ -19,6 +19,12 @@ pub struct Pattern {
     definition: String,
 }
 
+#[derive(Copy, Clone)]
+pub struct Cycle {
+    number: u16,
+    duration: Duration,
+}
+
 pub struct Interpreter {
     osc_sink: Sender<OscPacket>,
     lua: Lua,
@@ -33,11 +39,14 @@ impl Interpreter {
 
         let (osc_sink, osc_stream) = unbounded::<OscPacket>();
         let (pattern_sink, pattern_stream) = unbounded::<Pattern>();
-        let (timer_sink, timer_stream) = unbounded::<String>();
+        let (timer_sink, timer_stream) = unbounded::<Cycle>();
         thread::spawn(move || {
+            let mut number = 0;
             loop {
-                sleep(Duration::from_secs(1));
-                timer_sink.send("cacca".to_string());
+                let duration = Duration::from_secs(1);
+                sleep(duration);
+                timer_sink.send(Cycle { number, duration });
+                number += 1;
             }
         });
 
@@ -116,12 +125,11 @@ impl Interpreter {
         Interpreter { osc_sink, lua, patterns: patterns_arc }
     }
 
-    fn handle_patterns(timer_stream: Receiver<String>, patterns_arc: Arc<Mutex<HashMap<usize, Pattern>>>, osc_sink: Sender<OscPacket>) {
+    fn handle_patterns(timer_stream: Receiver<Cycle>, patterns_arc: Arc<Mutex<HashMap<usize, Pattern>>>, osc_sink: Sender<OscPacket>) {
         loop {
             match timer_stream.recv() {
-                Ok(time) => {
+                Ok(cycle) => {
                     let patterns = patterns_arc.lock().unwrap();
-                    println!("Ci sono dei pattern? {}", patterns.len());
                     for (id, pattern) in patterns.iter() {
                         let definition = &pattern.definition;
                         let pieces = definition.split_whitespace()
@@ -139,7 +147,7 @@ impl Interpreter {
                                 }));
 
                                 index += 1;
-                                sleep(Duration::from_secs_f64((1. / (pieces.len() as f64)) as f64));
+                                sleep(cycle.duration.div(pieces.len() as u32));
                             }
                         });
                     }
