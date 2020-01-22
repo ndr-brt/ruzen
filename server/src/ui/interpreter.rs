@@ -22,13 +22,13 @@ pub struct Pattern {
 pub struct Interpreter {
     osc_sink: Sender<OscPacket>,
     lua: Lua,
-    patterns: HashMap<usize, Pattern>,
+    patterns: Arc<Mutex<HashMap<usize, Pattern>>>,
 }
 
 impl Interpreter {
     pub(crate) fn new(osc_address_out: &'static str) -> Interpreter {
         let lua = Lua::new();
-        let patterns: HashMap<usize, String> = HashMap::new();
+        let patterns: HashMap<usize, Pattern> = HashMap::new();
         let patterns_arc = Arc::new(Mutex::new(patterns));
 
         let (osc_sink, osc_stream) = unbounded::<OscPacket>();
@@ -51,7 +51,6 @@ impl Interpreter {
             let patterns_arc = patterns_arc.clone();
             thread::spawn(move || Interpreter::listen_pattern_change(pattern_stream, patterns_arc));
         }
-
 
         let _: Result<(), Error> = lua.context(|lua_ctx| {
             match read_file("src/ui/ui.lua".to_string()) {
@@ -98,7 +97,6 @@ impl Interpreter {
             Ok(())
         });
 
-
         thread::spawn(move || {
             let socket = UdpSocket::bind(OSC_ADDRESS_CLIENT).unwrap();
 
@@ -115,16 +113,17 @@ impl Interpreter {
             }
         });
 
-        Interpreter { osc_sink, lua, patterns: HashMap::new() }
+        Interpreter { osc_sink, lua, patterns: patterns_arc }
     }
 
-    fn handle_patterns(timer_stream: Receiver<String>, patterns_arc: Arc<Mutex<HashMap<usize, String>>>, osc_sink: Sender<OscPacket>) {
+    fn handle_patterns(timer_stream: Receiver<String>, patterns_arc: Arc<Mutex<HashMap<usize, Pattern>>>, osc_sink: Sender<OscPacket>) {
         loop {
             match timer_stream.recv() {
                 Ok(time) => {
                     let patterns = patterns_arc.lock().unwrap();
                     println!("Ci sono dei pattern? {}", patterns.len());
-                    for (id, definition) in patterns.iter() {
+                    for (id, pattern) in patterns.iter() {
+                        let definition = &pattern.definition;
                         let pieces = definition.split_whitespace()
                             .map(String::from)
                             .collect::<Vec<String>>();
@@ -150,11 +149,11 @@ impl Interpreter {
         }
     }
 
-    fn listen_pattern_change(pattern_stream: Receiver<Pattern>, patterns: Arc<Mutex<HashMap<usize, String>>>) {
+    fn listen_pattern_change(pattern_stream: Receiver<Pattern>, patterns: Arc<Mutex<HashMap<usize, Pattern>>>) {
         loop {
             match pattern_stream.recv() {
                 Ok(pattern) => {
-                    patterns.lock().unwrap().insert(pattern.id, pattern.definition);
+                    patterns.lock().unwrap().insert(pattern.id, pattern);
                 }
                 Err(e) => {}
             };

@@ -27,9 +27,9 @@ end
 
 inst("bbb", "kick", {})
 
-p(1, "kick snare snare kick catta")
-p(2, "snare")
-p(3, "catta")
+p(1, "~ kick ~ kick")
+p(2, "snare ~ snare")
+p(3, "~")
 
 hush()
 start()
