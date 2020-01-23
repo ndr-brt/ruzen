@@ -30,8 +30,7 @@ impl Synth {
             if let Ok(packet) = osc_stream.try_recv() {
                 match packet {
                     OscPacket::Message(msg) => {
-                        println!("OSC address: {}", msg.addr);
-                        println!("OSC arguments: {:?}", msg.args);
+                        println!("OSC message: {} {:?}", msg.addr);
                         let tokens: Vec<String> = msg.addr
                                 .split('/')
                                 .map(String::from)
