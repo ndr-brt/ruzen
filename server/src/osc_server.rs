@@ -1,6 +1,6 @@
 use rosc::OscPacket;
-use std::sync::mpsc::Sender;
 use std::net::UdpSocket;
+use crossbeam_channel::Sender;
 
 pub struct OscServer {
     address: &'static str,

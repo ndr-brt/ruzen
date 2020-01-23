@@ -1,8 +1,8 @@
 use cpal::{Format, ChannelCount, OutputBuffer, Host, Device};
 use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
 use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
-use std::sync::mpsc::Receiver;
 use cpal::StreamData::Output;
+use crossbeam_channel::Receiver;
 
 const LATENCY: u8 = 250;
 

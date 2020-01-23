@@ -1,10 +1,9 @@
-use std::sync::mpsc::{Receiver, SyncSender};
-
 use crate::clock::{Hz};
 use crate::instrument::{snare, kick, strange, catta, sine};
 use crate::instrument::parameters::Parameters;
 use rosc::{OscPacket};
 use crate::synth::state::State;
+use crossbeam_channel::{Receiver, Sender};
 
 pub mod ugen;
 mod state;
@@ -18,7 +17,7 @@ impl Synth {
         Synth { sample_rate }
     }
 
-    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_out: SyncSender<f64>) {
+    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_out: Sender<f64>) {
         let mut state = State::new(self.sample_rate);
         state.add("kick", |sample_rate, params| kick(sample_rate, params));
         state.add("snare", |sample_rate, params| snare(sample_rate, params));

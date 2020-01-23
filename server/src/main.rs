@@ -6,7 +6,6 @@ extern crate rosc;
 #[macro_use]
 extern crate crossbeam_channel;
 
-use std::sync::mpsc::{sync_channel, channel};
 use std::thread;
 
 use crate::out::Out;
@@ -15,6 +14,7 @@ use crate::ui::UIServer;
 use rosc::OscPacket;
 use std::net::UdpSocket;
 use crate::osc_server::OscServer;
+use crossbeam_channel::{unbounded, bounded};
 
 mod clock;
 mod out;
@@ -30,8 +30,8 @@ const UI_ADDRESS_IN: &str = "127.0.0.1:38043";
 
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
-    let (osc_sink, osc_stream) = channel::<OscPacket>();
-    let (sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
+    let (osc_sink, osc_stream) = unbounded::<OscPacket>();
+    let (sig_out, sig_in) = bounded::<f64>(out.buffer_size());
     let sample_rate = out.sample_rate();
     let synth = Synth::new(sample_rate);
     let osc_server = OscServer::new(OSC_ADDRESS_SERVER);
