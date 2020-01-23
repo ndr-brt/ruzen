@@ -86,7 +86,7 @@ pub(crate) fn strange(sample_rate: f64, _params: Parameters) -> Box<dyn Instrume
 pub(crate) fn catta(sample_rate: f64, _params: Parameters) -> Box<dyn Instrument> {
     Box::new(EnvelopedInstrument {
         clock: Clock::new(sample_rate),
-        envelope: Box::new(Envelope::ar(1., 0.2, 0.)),
+        envelope: Box::new(Envelope::ar(0.5, 0.2, 0.)),
         signal: {
             let first_width_modulation = Generator::sine().frequency(UGen::from(5.)).range(0.1, 0.9);
             let second_width_modulation = Generator::sine().frequency(UGen::from(1.4)).range(0.1, 0.9);
@@ -104,6 +104,17 @@ pub(crate) fn sine(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> 
         clock: Clock::new(sample_rate),
         signal: Box::new(
             Generator::sine()
+                .frequency(params.get("freq", UGen::from(440.)))
+                .phase(params.get("phase", UGen::from(0.)))
+        )
+    })
+}
+
+pub(crate) fn saw(sample_rate: f64, params: Parameters) -> Box<dyn Instrument> {
+    Box::new(ContinuousInstrument {
+        clock: Clock::new(sample_rate),
+        signal: Box::new(
+            Generator::saw()
                 .frequency(params.get("freq", UGen::from(440.)))
                 .phase(params.get("phase", UGen::from(0.)))
         )

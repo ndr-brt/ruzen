@@ -1,5 +1,5 @@
 use crate::clock::{Hz};
-use crate::instrument::{snare, kick, strange, catta, sine};
+use crate::instrument::{snare, kick, strange, catta, sine, saw};
 use crate::instrument::parameters::Parameters;
 use rosc::{OscPacket};
 use crate::synth::state::State;
@@ -24,6 +24,7 @@ impl Synth {
         state.add("catta", |sample_rate, params| catta(sample_rate, params));
         state.add("strange", |sample_rate, params| strange(sample_rate, params));
         state.add("sine", |sample_rate, params| sine(sample_rate, params));
+        state.add("saw", |sample_rate, params| saw(sample_rate, params));
 
         loop {
             if let Ok(packet) = osc_stream.try_recv() {
