@@ -7,7 +7,6 @@ use std::fs::File;
 use std::io::Read;
 use crate::ui::interpreter::Interpreter;
 use std::collections::HashMap;
-use std::sync::mpsc::channel;
 
 mod interpreter;
 

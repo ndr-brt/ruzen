@@ -14,6 +14,7 @@ use crate::synth::Synth;
 use crate::ui::UIServer;
 use rosc::OscPacket;
 use std::net::UdpSocket;
+use crate::osc_server::OscServer;
 
 mod clock;
 mod out;
@@ -21,6 +22,7 @@ mod plot;
 mod instrument;
 mod synth;
 mod ui;
+mod osc_server;
 
 const OSC_ADDRESS_SERVER: &str = "127.0.0.1:38041";
 const OSC_ADDRESS_CLIENT: &str = "127.0.0.1:38042";
@@ -32,27 +34,11 @@ fn main() {
     let (sig_out, sig_in) = sync_channel::<f64>(out.buffer_size());
     let sample_rate = out.sample_rate();
     let synth = Synth::new(sample_rate);
+    let osc_server = OscServer::new(OSC_ADDRESS_SERVER);
 
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(osc_stream, sig_out));
-    thread::spawn(move || {
-        let sock = UdpSocket::bind(OSC_ADDRESS_SERVER).unwrap();
-        let mut buf = [0u8; rosc::decoder::MTU];
-
-        loop {
-            match sock.recv_from(&mut buf) {
-                Ok((size, addr)) => {
-                    println!("Received packet with size {} from: {}", size, addr);
-                    let packet = rosc::decoder::decode(&buf[..size]).unwrap();
-                    osc_sink.send(packet);
-                }
-                Err(e) => {
-                    println!("Error receiving from socket: {}", e);
-                    break;
-                }
-            }
-        }
-    });
+    thread::spawn(move || osc_server.listen_forever(osc_sink));
 
     let ui_server = UIServer::new(UI_ADDRESS_IN, OSC_ADDRESS_SERVER);
     ui_server.listen();
