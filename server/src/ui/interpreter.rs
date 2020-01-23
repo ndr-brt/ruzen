@@ -3,12 +3,11 @@ use rosc::{OscPacket, OscMessage, OscType, encoder};
 use std::{str, thread};
 use std::net::UdpSocket;
 use crate::OSC_ADDRESS_CLIENT;
-use rlua::{Lua, ExternalError};
+use rlua::{Lua};
 use std::fs::File;
 use std::io::Read;
 use std::collections::HashMap;
 use failure::_core::fmt::Error;
-use failure::_core::ops::Deref;
 use std::thread::sleep;
 use std::ops::Div;
 use std::sync::{Arc, Mutex};
@@ -167,12 +166,6 @@ impl Interpreter {
             };
         }
     }
-
-    pub(crate) fn sender(&self) -> Sender<OscPacket> {
-        self.osc_sink.clone()
-    }
-
-    pub(crate) fn init(&'static mut self) {}
 
     pub(crate) fn run(&self, code: String) {
         self.lua.context(|context| {

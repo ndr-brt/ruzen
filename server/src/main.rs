@@ -3,7 +3,6 @@ extern crate failure;
 extern crate rand;
 extern crate rlua;
 extern crate rosc;
-#[macro_use]
 extern crate crossbeam_channel;
 
 use std::thread;
@@ -12,7 +11,6 @@ use crate::out::Out;
 use crate::synth::Synth;
 use crate::ui::UIServer;
 use rosc::OscPacket;
-use std::net::UdpSocket;
 use crate::osc_server::OscServer;
 use crossbeam_channel::{unbounded, bounded};
 
@@ -30,11 +28,11 @@ const UI_ADDRESS_IN: &str = "127.0.0.1:38043";
 
 fn main() {
     let out = Out::init().unwrap_or_else(|e| panic!(e));
+    let synth = Synth::new(out.sample_rate());
+    let osc_server = OscServer::new(OSC_ADDRESS_SERVER);
+
     let (osc_sink, osc_stream) = unbounded::<OscPacket>();
     let (sig_out, sig_in) = bounded::<f64>(out.buffer_size());
-    let sample_rate = out.sample_rate();
-    let synth = Synth::new(sample_rate);
-    let osc_server = OscServer::new(OSC_ADDRESS_SERVER);
 
     thread::spawn(move || out.loop_forever(sig_in));
     thread::spawn(move || synth.loop_forever(osc_stream, sig_out));
