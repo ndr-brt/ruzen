@@ -3,6 +3,7 @@ use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
 use cpal::UnknownTypeOutputBuffer::{F32, I16, U16};
 use cpal::StreamData::Output;
 use crossbeam_channel::Receiver;
+use crate::Block;
 
 const LATENCY: u8 = 250;
 
@@ -33,7 +34,7 @@ impl Out {
         *&self.format.sample_rate.0 as f64
     }
 
-    pub fn loop_forever(&self, sig_in: Receiver<f64>) {
+    pub fn loop_forever(&self, signal_stream: Receiver<Block>) {
         let channels: ChannelCount = *&self.format.channels;
         let event_loop = &self.host.event_loop();
         let stream_id = event_loop.build_output_stream(&self.device, &self.format).unwrap();
@@ -52,23 +53,25 @@ impl Out {
             };
 
             match data {
-                Output { buffer: F32(buffer) } => feed_buffer(buffer, &sig_in, channels as usize),
-                Output { buffer: I16(buffer) } => feed_buffer(buffer, &sig_in, channels as usize),
-                Output { buffer: U16(buffer) } => feed_buffer(buffer, &sig_in, channels as usize),
+                Output { buffer: F32(buffer) } => feed_buffer(buffer, &signal_stream, channels as usize),
+                Output { buffer: I16(buffer) } => feed_buffer(buffer, &signal_stream, channels as usize),
+                Output { buffer: U16(buffer) } => feed_buffer(buffer, &signal_stream, channels as usize),
                 _ => panic!("Unexpected buffer type.")
             }
         })
     }
 }
 
-fn feed_buffer<T: SampleFromF64>(mut buffer: OutputBuffer<'_, T>, sig_in: &Receiver<f64>, channels: usize) {
+fn feed_buffer<T: SampleFromF64>(mut buffer: OutputBuffer<'_, T>, sig_in: &Receiver<Block>, channels: usize) {
     for buff_chunks in buffer.chunks_mut(channels) {
         match sig_in.recv() {
-            Ok(sample) => {
-                for out in buff_chunks.iter_mut() {
-                    *out = T::from_f64(sample);
+            Ok(block) => {
+                for sample in block {
+                    for channel in buff_chunks.iter_mut() {
+                        *channel = T::from_f64(sample)
+                    }
                 }
-            },
+            }
             _ => {
                 panic!("Sample channel hang up?");
             }

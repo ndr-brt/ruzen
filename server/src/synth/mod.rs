@@ -4,20 +4,22 @@ use crate::instrument::parameters::Parameters;
 use rosc::{OscPacket};
 use crate::synth::state::State;
 use crossbeam_channel::{Receiver, Sender};
+use crate::Block;
 
 pub mod ugen;
 mod state;
 
 pub struct Synth {
     sample_rate: Hz,
+    block_size: u16,
 }
 
 impl Synth {
-    pub fn new(sample_rate: Hz) -> Synth {
-        Synth { sample_rate }
+    pub fn new(sample_rate: Hz, block_size: u16) -> Synth {
+        Synth { sample_rate, block_size }
     }
 
-    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_out: Sender<f64>) {
+    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_sink: Sender<Block>) {
         let mut state = State::new(self.sample_rate);
         state.add("kick", |sample_rate, params| kick(sample_rate, params));
         state.add("snare", |sample_rate, params| snare(sample_rate, params));
@@ -30,7 +32,7 @@ impl Synth {
             if let Ok(packet) = osc_stream.try_recv() {
                 match packet {
                     OscPacket::Message(msg) => {
-                        println!("OSC message: {} {:?}", msg.addr);
+                        println!("OSC message: {} {:?}", msg.addr, msg.args);
                         let tokens: Vec<String> = msg.addr
                                 .split('/')
                                 .map(String::from)
@@ -53,7 +55,7 @@ impl Synth {
                 }
             }
 
-            let result = signal_out.send(state.next_sample());
+            let result = signal_sink.send(vec![state.next_sample()]);
             match result {
                 Ok(_data) => (),
                 Err(err) => println!("Error: {}", err)
