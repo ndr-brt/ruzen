@@ -55,10 +55,9 @@ impl Synth {
                 }
             }
 
-            let result = signal_sink.send(state.next_sample());
-            match result {
-                Ok(_data) => (),
-                Err(err) => println!("Error: {}", err)
+            let block = state.next_block();
+            for sample in block {
+                signal_sink.send(sample);
             }
         }
 

@@ -2,6 +2,7 @@ use crate::clock::Hz;
 use std::collections::HashMap;
 use crate::instrument::Instrument;
 use crate::instrument::parameters::Parameters;
+use crate::Block;
 
 pub struct State {
     sample_rate: Hz,
@@ -16,6 +17,14 @@ impl State {
             instruments: HashMap::new(),
             definitions: HashMap::new(),
         }
+    }
+
+    pub fn next_block(&mut self) -> Block {
+        self.instruments.retain(|_, instrument| !instrument.is_finished());
+
+        let sample = self.instruments.iter_mut().map(|(_, i)| i.signal()).sum();
+
+        vec![sample]
     }
 
     pub fn next_sample(&mut self) -> f64 {
