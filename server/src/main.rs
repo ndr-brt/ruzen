@@ -26,16 +26,17 @@ const OSC_ADDRESS_SERVER: &str = "127.0.0.1:38041";
 const OSC_ADDRESS_CLIENT: &str = "127.0.0.1:38042";
 const UI_ADDRESS_IN: &str = "127.0.0.1:38043";
 
+type Sample = f64;
 type Block = Vec<f64>;
 
 fn main() {
-    let block_size: u16 = 128;
+    let block_size: usize = 128;
     let out = Out::init().unwrap_or_else(|e| panic!(e));
-    let synth = Synth::new(out.sample_rate(), 128);
+    let synth = Synth::new(out.sample_rate(), block_size);
     let osc_server = OscServer::new(OSC_ADDRESS_SERVER);
 
     let (osc_sink, osc_stream) = unbounded::<OscPacket>();
-    let (signal_sink, signal_stream) = bounded::<Block>(out.buffer_size());
+    let (signal_sink, signal_stream) = bounded::<Sample>(out.buffer_size());
 
     thread::spawn(move || out.loop_forever(signal_stream));
     thread::spawn(move || synth.loop_forever(osc_stream, signal_sink));

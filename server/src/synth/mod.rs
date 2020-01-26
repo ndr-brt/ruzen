@@ -4,22 +4,22 @@ use crate::instrument::parameters::Parameters;
 use rosc::{OscPacket};
 use crate::synth::state::State;
 use crossbeam_channel::{Receiver, Sender};
-use crate::Block;
+use crate::{Block, Sample};
 
 pub mod ugen;
 mod state;
 
 pub struct Synth {
     sample_rate: Hz,
-    block_size: u16,
+    block_size: usize,
 }
 
 impl Synth {
-    pub fn new(sample_rate: Hz, block_size: u16) -> Synth {
+    pub fn new(sample_rate: Hz, block_size: usize) -> Synth {
         Synth { sample_rate, block_size }
     }
 
-    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_sink: Sender<Block>) {
+    pub fn loop_forever(&self, osc_stream: Receiver<OscPacket>, signal_sink: Sender<Sample>) {
         let mut state = State::new(self.sample_rate);
         state.add("kick", |sample_rate, params| kick(sample_rate, params));
         state.add("snare", |sample_rate, params| snare(sample_rate, params));
@@ -55,7 +55,7 @@ impl Synth {
                 }
             }
 
-            let result = signal_sink.send(vec![state.next_sample()]);
+            let result = signal_sink.send(state.next_sample());
             match result {
                 Ok(_data) => (),
                 Err(err) => println!("Error: {}", err)
