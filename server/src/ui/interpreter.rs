@@ -137,22 +137,24 @@ impl Interpreter {
 
                         let pattern_osc_sink = osc_sink.clone();
                         let io_dio = id.clone();
-                        thread::spawn(move || {
-                            let mut index = 0;
-                            while index < pieces.len() {
-                                pattern_osc_sink.send(OscPacket::Message(OscMessage {
-                                    addr: format!("/instrument/{}/{}-{}", pieces[index], io_dio, index),
-                                    args: vec![],
-                                }));
-
-                                index += 1;
-                                sleep(cycle.duration.div(pieces.len() as u32));
-                            }
-                        });
+                        thread::spawn(move || Interpreter::send(cycle, pieces, pattern_osc_sink, io_dio));
                     }
                 },
                 Err(e) => { println!("Error receiving time {}", e.to_string()); }
             }
+        }
+    }
+
+    fn send(cycle: Cycle, pieces: Vec<String>, pattern_osc_sink: Sender<OscPacket>, id: usize) -> () {
+        let mut index = 0;
+        while index < pieces.len() {
+            pattern_osc_sink.send(OscPacket::Message(OscMessage {
+                addr: format!("/instrument/{}/{}-{}", pieces[index], id, index),
+                args: vec![],
+            }));
+
+            index += 1;
+            sleep(cycle.duration.div(pieces.len() as u32));
         }
     }
 

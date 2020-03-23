@@ -2,4 +2,4 @@
 
 ## TODO
 * edit continuous instrument params in realtime
-* introduce filters
+* introduce filters/fx
