@@ -2,7 +2,7 @@ use crate::clock::{Hz, Clock};
 use std::collections::HashMap;
 use crate::instrument::{Instrument, kick, snare, catta, strange, sine, saw};
 use crate::instrument::parameters::Parameters;
-use crate::{Block, Sample};
+use crate::{Block, Sample, Definition};
 use crate::state::ugen::{ValueAt};
 use rosc::{OscMessage, OscPacket};
 use crossbeam_channel::{Receiver, Sender};
@@ -13,7 +13,7 @@ pub mod ugen;
 pub struct State {
     sample_rate: Hz,
     block_size: usize,
-    definitions: HashMap<String, Box<fn(Parameters) -> Box<dyn ValueAt>>>,
+    definitions: HashMap<String, Box<Definition>>,
     instruments: Mutex<HashMap<String, Instrument>>,
 }
 
@@ -57,10 +57,8 @@ impl State {
 
         for i in 0..self.block_size {
             let sample = instruments.iter_mut().map(|(_, i)| {
-                let time = i.tick();
-                // TODO: is possible to interpolate?
                 match self.definitions.get(i.name()) {
-                    Some(definition) => definition(i.params()).value_at(time),
+                    Some(definition) => i.sample(definition),
                     _ => 0.
                 }
             }).sum();
@@ -71,7 +69,7 @@ impl State {
         block
     }
 
-    pub fn add(&mut self, name: &str, definition: fn(Parameters) -> Box<dyn ValueAt>) {
+    pub fn add(&mut self, name: &str, definition: Definition) {
         self.definitions.insert(String::from(name), Box::new(definition));
     }
 

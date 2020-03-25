@@ -14,6 +14,8 @@ use crate::osc_server::OscServer;
 use crossbeam_channel::{unbounded, bounded};
 use crate::state::State;
 use crate::instrument::{kick, snare, catta, strange, sine, saw};
+use crate::instrument::parameters::Parameters;
+use crate::state::ugen::ValueAt;
 
 mod clock;
 mod out;
@@ -29,6 +31,7 @@ const UI_ADDRESS_IN: &str = "127.0.0.1:38043";
 
 type Sample = f64;
 type Block = Vec<f64>;
+type Definition = fn(&Parameters) -> Box<dyn ValueAt>;
 
 fn main() {
     let block_size = 128;

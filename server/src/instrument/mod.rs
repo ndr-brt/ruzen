@@ -7,11 +7,18 @@ use crate::state::ugen::{UGen, ValueAt, SignalRange};
 use crate::state::ugen::envelope::Envelope;
 use crate::state::ugen::generator::Generator;
 use crate::state::ugen::params::*;
+use crate::Definition;
+
+pub struct ParametersChanged {
+    time: f64,
+    params: Parameters,
+}
 
 pub struct Instrument {
     name: String,
     clock: Clock,
     params: Parameters,
+    history: Vec<ParametersChanged>
 }
 
 impl Instrument {
@@ -19,8 +26,22 @@ impl Instrument {
         Instrument {
             name,
             clock,
-            params
+            params,
+            history: vec![]
         }
+    }
+
+    pub fn sample(&mut self, definition: &Definition) -> f64 {
+        let time = self.tick();
+
+        // TODO: 0.1 is the constant for interpolation duration in seconds
+        let definitions: Vec<f64> = self.history.iter()
+            .filter(|h| h.time + 0.1 > time)
+            .map(|h| definition(&h.params))
+            .map(|h| h.value_at(time))
+            .collect();
+
+        (definitions.iter().sum::<f64>() + definition(&self.params).value_at(time)) / (definitions.len() + 1) as f64
     }
 
     pub fn tick(&mut self) -> f64 {
@@ -37,13 +58,13 @@ impl Instrument {
     }
 
     pub fn change_parameters(&mut self, params: Parameters) {
+        self.history.push(ParametersChanged {
+            time: self.clock.get(),
+            params: self.params.clone(),
+        });
+
         self.params = params;
     }
-
-    // fn signal(&mut self) -> f64 {
-    //     self.clock.tick();
-    //     self.signal.value_at(self.clock.get())
-    // }
 
     pub(crate) fn is_finished(&self) -> bool {
         false
@@ -51,7 +72,7 @@ impl Instrument {
 }
 
 // TODO: these functions should return just valueAt, can be Box::new be added outside?
-pub(crate) fn kick(_params: Parameters) -> Box<dyn ValueAt> {
+pub(crate) fn kick(_params: &Parameters) -> Box<dyn ValueAt> {
     Box::new(Generator::sine()
         .frequency(Envelope::ar(0.0001, 1.5, -200.).range(45., 845.))
         .phase(UGen::from(1.0))
@@ -59,7 +80,7 @@ pub(crate) fn kick(_params: Parameters) -> Box<dyn ValueAt> {
     )
 }
 
-pub(crate) fn snare(_params: Parameters) -> Box<dyn ValueAt> {
+pub(crate) fn snare(_params: &Parameters) -> Box<dyn ValueAt> {
     Box::new(
     (Generator::sine().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.055, -4.).range(0., 0.25))
         + (Generator::sine().frequency(UGen::from(30.)) * Envelope::ar(0.0005, 0.075, -4.).range(0., 0.25))
@@ -67,14 +88,14 @@ pub(crate) fn snare(_params: Parameters) -> Box<dyn ValueAt> {
     )
 }
 
-pub(crate) fn strange(_params: Parameters) -> Box<dyn ValueAt> {
+pub(crate) fn strange(_params: &Parameters) -> Box<dyn ValueAt> {
     Box::new(
     Generator::saw().frequency(UGen::from(120.)) * UGen::from(0.5) +
         Generator::sine().frequency(UGen::from(100.)) * UGen::from(0.5)
     )
 }
 
-pub(crate) fn catta(_params: Parameters) -> Box<dyn ValueAt> {
+pub(crate) fn catta(_params: &Parameters) -> Box<dyn ValueAt> {
     let first_width_modulation = Generator::sine().frequency(UGen::from(5.)).range(0.1, 0.9);
     let second_width_modulation = Generator::sine().frequency(UGen::from(1.4)).range(0.1, 0.9);
 
@@ -84,7 +105,7 @@ pub(crate) fn catta(_params: Parameters) -> Box<dyn ValueAt> {
     )
 }
 
-pub(crate) fn sine(params: Parameters) -> Box<dyn ValueAt> {
+pub(crate) fn sine(params: &Parameters) -> Box<dyn ValueAt> {
     Box::new(
     Generator::sine()
         .frequency(params.get("freq", UGen::from(440.)))
@@ -92,7 +113,7 @@ pub(crate) fn sine(params: Parameters) -> Box<dyn ValueAt> {
     )
 }
 
-pub(crate) fn saw(params: Parameters) -> Box<dyn ValueAt> {
+pub(crate) fn saw(params: &Parameters) -> Box<dyn ValueAt> {
     Box::new(
     Generator::saw()
         .frequency(params.get("freq", UGen::from(440.)))
