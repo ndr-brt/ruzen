@@ -31,9 +31,10 @@ type Sample = f64;
 type Block = Vec<f64>;
 
 fn main() {
+    let block_size = 128;
     let out = Out::init().unwrap_or_else(|e| panic!(e));
     let osc_server = OscServer::new(OSC_ADDRESS_SERVER);
-    let mut state = State::new(out.sample_rate());
+    let mut state = State::new(out.sample_rate(), block_size);
     state.add("kick", |params| kick(params));
     state.add("snare", |params| snare(params));
     state.add("catta", |params| catta(params));

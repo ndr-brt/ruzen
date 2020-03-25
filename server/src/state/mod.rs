@@ -12,14 +12,16 @@ pub mod ugen;
 
 pub struct State {
     sample_rate: Hz,
+    block_size: usize,
     definitions: HashMap<String, Box<fn(Parameters) -> Box<dyn ValueAt>>>,
     instruments: Mutex<HashMap<String, Instrument>>,
 }
 
 impl State {
-    pub fn new(sample_rate: Hz) -> State {
+    pub fn new(sample_rate: Hz, block_size: usize) -> State {
         State {
             sample_rate,
+            block_size,
             instruments: Mutex::new(HashMap::new()),
             definitions: HashMap::new(),
         }
@@ -51,16 +53,22 @@ impl State {
         // TODO: do retain not every block
         //instruments.retain(|_, instrument| !instrument.is_finished());
 
-        let sample = instruments.iter_mut().map(|(_, i)| {
-            let time = i.tick();
-            // TODO: is possible to interpolate?
-            match self.definitions.get(i.name()) {
-                Some(definition) => definition(i.params()).value_at(time),
-                _ => 0.
-            }
-        }).sum();
+        let mut block = vec![];
 
-        vec![sample]
+        for i in 0..self.block_size {
+            let sample = instruments.iter_mut().map(|(_, i)| {
+                let time = i.tick();
+                // TODO: is possible to interpolate?
+                match self.definitions.get(i.name()) {
+                    Some(definition) => definition(i.params()).value_at(time),
+                    _ => 0.
+                }
+            }).sum();
+
+            block.push(sample);
+        }
+
+        block
     }
 
     pub fn add(&mut self, name: &str, definition: fn(Parameters) -> Box<dyn ValueAt>) {
