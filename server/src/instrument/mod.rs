@@ -33,15 +33,24 @@ impl Instrument {
 
     pub fn sample(&mut self, definition: &Definition) -> f64 {
         let time = self.tick();
+        let interpolation_duration = 0.01;
+        // TODO: handle interpolation between 3 signals or more
 
-        // TODO: 0.1 is the constant for interpolation duration in seconds
-        let definitions: Vec<f64> = self.history.iter()
-            .filter(|h| h.time + 0.1 > time)
-            .map(|h| definition(&h.params))
-            .map(|h| h.value_at(time))
+        let definitions: Vec<&ParametersChanged> = self.history.iter()
+            .filter(|h| h.time + interpolation_duration > time)
             .collect();
 
-        (definitions.iter().sum::<f64>() + definition(&self.params).value_at(time)) / (definitions.len() + 1) as f64
+        if definitions.len() > 0 {
+            let old_signal = definitions.get(0).unwrap();
+            let percent = (time - old_signal.time)/interpolation_duration;
+
+            (definition(&old_signal.params).value_at(time) * (1.-percent)) + (definition(&self.params).value_at(time) * percent)
+
+        } else {
+            definition(&self.params).value_at(time)
+        }
+
+        //(definitions.iter().sum::<f64>() + definition(&self.params).value_at(time)) / (definitions.len() + 1) as f64
     }
 
     pub fn tick(&mut self) -> f64 {
