@@ -1,4 +1,4 @@
-use crate::synth::ugen::{UGen, ValueAt, Range};
+use crate::state::ugen::{UGen, ValueAt, Range};
 
 pub trait Envelope: ValueAt {
     fn duration(&self) -> f64;
@@ -60,15 +60,15 @@ impl Envelope for UGen<Line> {
 
 impl ValueAt for Line {
     fn value_at(&self, clock: f64) -> f64 {
-        (self.start + (clock * (self.end - self.start) / self.duration))
+        self.start + (clock * (self.end - self.start) / self.duration)
     }
 }
 
 
 #[cfg(test)]
 mod tests {
-    use crate::synth::ugen::{ValueAt };
-    use crate::synth::ugen::envelope::Envelope;
+    use crate::state::ugen::{ValueAt };
+    use crate::state::ugen::envelope::Envelope;
 
     #[test]
     fn ar_envelope() {

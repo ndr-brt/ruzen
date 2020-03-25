@@ -1,4 +1,4 @@
-use crate::synth::ugen::ValueAt;
+use crate::state::ugen::ValueAt;
 use rand::Rng;
 
 pub struct WhiteNoise { }

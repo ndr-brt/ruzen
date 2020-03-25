@@ -140,10 +140,10 @@ impl<T> ValueAt for Ranged<T> where T: ValueAt {
 
 #[cfg(test)]
 mod tests {
-    use crate::synth::ugen::{ValueAt, SignalRange, UGen};
-    use crate::synth::ugen::generator::{Generator};
-    use crate::synth::ugen::params::FrequencyParam;
-    use crate::synth::ugen::envelope::Envelope;
+    use crate::state::ugen::{ValueAt, SignalRange, UGen};
+    use crate::state::ugen::generator::{Generator};
+    use crate::state::ugen::params::FrequencyParam;
+    use crate::state::ugen::envelope::Envelope;
     use assert_approx_eq::assert_approx_eq;
 
     #[test]

@@ -1,7 +1,7 @@
 use gnuplot::{Figure, AxesCommon};
 use gnuplot::Coordinate::Graph;
 use gnuplot::PlotOption::Caption;
-use crate::synth::ugen::{UGen, ValueAt};
+use crate::state::ugen::{UGen, ValueAt};
 
 pub(crate) trait Plot {
     fn plot(self);

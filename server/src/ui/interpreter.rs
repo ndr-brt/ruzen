@@ -164,7 +164,7 @@ impl Interpreter {
                 Ok(pattern) => {
                     patterns.lock().unwrap().insert(pattern.id, pattern);
                 }
-                Err(e) => {}
+                Err(_e) => {}
             };
         }
     }

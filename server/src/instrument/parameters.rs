@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use rosc::OscType;
-use crate::synth::ugen::{UGen};
+use crate::state::ugen::{UGen};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Parameters {
     data: HashMap<String, UGen<f64>>
 }

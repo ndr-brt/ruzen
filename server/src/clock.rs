@@ -1,7 +1,7 @@
 pub type Hz = f64;
 
 #[derive(Clone,Copy)]
-pub(crate) struct Clock {
+pub struct Clock {
     sample_rate: Hz,
     clock: f64,
 }

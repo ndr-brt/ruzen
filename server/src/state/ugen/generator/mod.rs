@@ -8,8 +8,8 @@ use self::saw::Saw;
 use self::pulse::Pulse;
 use self::whitenoise::WhiteNoise;
 
-use crate::synth::ugen::{ValueAt, UGen, Range};
-use crate::synth::ugen::params::{FrequencyParam, WidthParam, PhaseParam};
+use crate::state::ugen::{ValueAt, UGen, Range};
+use crate::state::ugen::params::{FrequencyParam, WidthParam, PhaseParam};
 
 const GENERATOR_RANGE: Range = Range { low: -1., high: 1. };
 
@@ -76,9 +76,9 @@ impl<T,O> WidthParam<T> for UGen<O> where T: 'static + ValueAt, O: WidthParam<T>
 #[cfg(test)]
 mod tests {
     use assert_approx_eq::assert_approx_eq;
-    use crate::synth::ugen::{UGen, ValueAt};
-    use crate::synth::ugen::generator::Generator;
-    use crate::synth::ugen::params::FrequencyParam;
+    use crate::state::ugen::{UGen, ValueAt};
+    use crate::state::ugen::generator::Generator;
+    use crate::state::ugen::params::FrequencyParam;
 
     #[test]
     fn sine() {
