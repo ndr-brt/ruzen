@@ -13,7 +13,7 @@ rand = "0.7.1"
 gnuplot = "0.0.34"
 rosc = "~0.3"
 rlua = "0.17.0"
-crossbeam-channel = "0.4.0"
+crossbeam-channel = "0.4.4"
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
